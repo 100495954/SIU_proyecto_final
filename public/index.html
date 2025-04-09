@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mapa Interactivo de Casa</title>
+  <link rel="stylesheet" href="styles.css"> <!-- Conectamos el CSS -->
+  <script src="/socket.io/socket.io.js"></script> <!-- Librería Socket.io -->
+  <script type="module" src="script.js" defer></script> <!-- Archivo JS con módulos ES -->
+</head>
+<body>
+  <h1>Mapa Interactivo de Casa</h1>
+  <div class="contenedor">
+    <div id="mapa">
+      <div id="persona"></div>
+    </div>
+    <div id="controles">
+      <button id="dejarGrifoAbierto">Dejar grifo abierto</button>
+      <button id="encenderLuces">Encender luces</button>
+      <button id="encenderFuego">Encender fuego</button>
+      <button id="caida">Simular caída</button>
+    </div>
+    <div>
+      <button id="apagarGrifo" style="display: none;">Apagar grifo</button>
+      <button id="apagarLuces" style="display: none;">Apagar luces</button>
+      <button id="apagarFuego" style="display: none;">Apagar fuego</button>
+      <button id="recoger" style="display: none;">Recoger</button>
+    </div>
+  </div>
+</body>
+</html>
