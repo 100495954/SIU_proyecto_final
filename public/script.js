@@ -58,19 +58,8 @@ function mostrarAlerta(texto) {
   }
 }
 
-// ------------------ BOTONES DE CONTROL ------------------
-// Luces
-document.getElementById('encenderLuces').addEventListener('click', () => {
-  mostrarAlerta('Las luces están encendidas.');
-  document.getElementById('apagarLuces').style.display = 'inline-block'; // Mostramos el botón de apagar
-});
+// ------------------ BOTON DE CONTROL PARA EL FUEGO DE LA COCINA  ------------------
 
-document.getElementById('apagarLuces').addEventListener('click', () => {
-  mostrarAlerta('Las luces están apagadas.');
-  document.getElementById('apagarLuces').style.display = 'none'; // Ocultamos el botón de apagar
-});
-
-// Fuego
 document.getElementById('encenderFuego').addEventListener('click', () => {
   mostrarAlerta('El fuego está encendido en la cocina.');
   document.getElementById('apagarFuego').style.display = 'inline-block'; // Mostramos el botón de apagar
