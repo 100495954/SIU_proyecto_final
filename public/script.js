@@ -38,18 +38,25 @@ actualizarPosicion();
 
 // ------------------ ALERTAS ------------------
 
-function mostrarAlerta(texto, temporal = true) {
+function mostrarAlerta(texto) {
   mensaje.textContent = texto;
   mensaje.style.fontWeight = 'bold';
   mensaje.style.color = 'green';
 
-  if (temporal) {
+  // Solo mensajes de resolución se ocultan tras 5 segundos
+  const resoluciones = [
+    'El grifo está apagado.',
+    'Las luces están apagadas.',
+    'El fuego está apagado.',
+    'La persona ha sido ayudada.'
+  ];
+
+  if (resoluciones.includes(texto)) {
     setTimeout(() => {
       mensaje.textContent = '';
-    }, 5000); // 5 segundos
+    }, 5000);
   }
 }
-
 
 // ------------------ BOTONES DE CONTROL ------------------
 // Luces
