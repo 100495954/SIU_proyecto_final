@@ -146,7 +146,7 @@ function iniciarDeteccionCaida() {
 
 // ------------------ DETECCIÓN REAL DE LUCES ------------------
 
-const brilloUmbral = 100; // Umbral de brillo para considerar luces encendidas (0-255)
+const brilloUmbral = 70; // Umbral de brillo para considerar luces encendidas (0-255)
 let lucesEncendidas = false;
 
 async function iniciarDeteccionLuces() {
