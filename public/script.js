@@ -186,7 +186,6 @@ async function iniciarDeteccionLuces() {
           document.getElementById('apagarLuces').style.display = 'inline-block';
         } else if (brilloPromedio <= brilloUmbral && lucesEncendidas) {
           lucesEncendidas = false;
-          mostrarAlerta('Las luces de la habitación están apagadas.');
           document.getElementById('apagarLuces').style.display = 'none';
         }
       }
