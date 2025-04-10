@@ -86,16 +86,48 @@ document.getElementById('apagarFuego').addEventListener('click', () => {
   document.getElementById('apagarFuego').style.display = 'none'; // Ocultamos el botón de apagar
 });
 
-// Caída
-document.getElementById('caida').addEventListener('click', () => {
-  mostrarAlerta('La persona ha sufrido una caída.');
-  document.getElementById('recoger').style.display = 'inline-block'; // Mostramos el botón de recoger
+// ------------------ DETECCIÓN DE SONIDO DEL GRIFO ------------------
+
+async function iniciarDeteccionSonido() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const source = audioContext.createMediaStreamSource(stream);
+    const analyser = audioContext.createAnalyser();
+
+    analyser.fftSize = 256;
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+
+    source.connect(analyser);
+
+    function detectarGrifo() {
+      analyser.getByteFrequencyData(dataArray);
+
+      // Detectamos si hay un pico constante en las frecuencias medias-altas (ruido de agua)
+      const media = dataArray.slice(30, 100); // Frecuencias medias-altas
+      const promedio = media.reduce((acc, val) => acc + val, 0) / media.length;
+
+      if (promedio > 70) {
+        mostrarAlerta('¡Se ha detectado un sonido similar a un grifo abierto!');
+        document.getElementById('apagarGrifo').style.display = 'inline-block';
+      }
+
+      requestAnimationFrame(detectarGrifo);
+    }
+
+    detectarGrifo();
+  } catch (err) {
+    console.error('Error accediendo al micrófono:', err);
+    alert('No se pudo acceder al micrófono.');
+  }
+}
+
+// Iniciamos la detección de sonido al cargar
+document.addEventListener('DOMContentLoaded', () => {
+  iniciarDeteccionSonido();
 });
 
-document.getElementById('recoger').addEventListener('click', () => {
-  mostrarAlerta('La persona ha sido ayudada.');
-  document.getElementById('recoger').style.display = 'none'; // Ocultamos el botón de ayuda
-});
 
 // ------------------ DETECCIÓN REAL DE CAÍDA ------------------
 
@@ -144,6 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const response = await DeviceMotionEvent.requestPermission();
         if (response === 'granted') {
           iniciarDeteccionCaida();
+          iniciarDeteccionSonido();
           btnPermiso.remove();
         } else {
           alert('Permiso denegado para acceder al acelerómetro.');
@@ -154,6 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       // No necesita permiso (Android)
       iniciarDeteccionCaida();
+      iniciarDeteccionSonido();
       btnPermiso.remove();
     }
   });
