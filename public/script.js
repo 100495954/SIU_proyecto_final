@@ -52,18 +52,6 @@ function mostrarAlerta(texto, temporal = true) {
 
 
 // ------------------ BOTONES DE CONTROL ------------------
-
-// Grifo
-document.getElementById('dejarGrifoAbierto').addEventListener('click', () => {
-  mostrarAlerta('El grifo lleva abierto más de 10 minutos.');
-  document.getElementById('apagarGrifo').style.display = 'inline-block'; // Mostramos el botón de apagar
-});
-
-document.getElementById('apagarGrifo').addEventListener('click', () => {
-  mostrarAlerta('El grifo está apagado.');
-  document.getElementById('apagarGrifo').style.display = 'none'; // Ocultamos el botón de apagar
-});
-
 // Luces
 document.getElementById('encenderLuces').addEventListener('click', () => {
   mostrarAlerta('Las luces están encendidas.');
