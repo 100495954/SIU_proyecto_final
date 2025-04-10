@@ -7,6 +7,16 @@ const paso = 10; // Cuánto mueve cada tecla
 const persona = document.getElementById('persona');
 const mensaje = document.createElement('p'); // Elemento donde se mostrarán las alertas
 document.getElementById('controles').appendChild(mensaje); // Lo añadimos al div de controles
+
+// Estado de las alertas para cada tipo
+const estadosAlertas = {
+  grifo: false,  // Si ya hay alerta del grifo
+  luces: false,  // Si ya hay alerta de luces
+  fuego: false,  // Si ya hay alerta del fuego
+  caida: false   // Si ya hay alerta de caída
+};
+
+// Contenedor de alertas (para que no se solapen)
 const contenedorAlertas = document.createElement('div');
 document.getElementById('controles').appendChild(contenedorAlertas);
 
@@ -40,14 +50,23 @@ actualizarPosicion();
 
 // ------------------ ALERTAS ------------------
 
-function mostrarAlerta(texto) {
+function mostrarAlerta(tipo, texto) {
+  // Si ya existe una alerta activa de ese tipo, no hacer nada
+  if (estadosAlertas[tipo]) {
+    return;
+  }
+
+  // Cambiar el estado del tipo de alerta a "activo"
+  estadosAlertas[tipo] = true;
+
+  // Crear el elemento de alerta
   const nuevaAlerta = document.createElement('p');
   nuevaAlerta.textContent = texto;
   nuevaAlerta.style.fontWeight = 'bold';
   nuevaAlerta.style.color = 'green';
   contenedorAlertas.appendChild(nuevaAlerta);
 
-  // Solo mensajes de resolución se ocultan tras 5 segundos
+  // Solo los mensajes de resolución se ocultan tras 5 segundos
   const resoluciones = [
     'El grifo está apagado.',
     'Las luces están apagadas.',
@@ -57,7 +76,8 @@ function mostrarAlerta(texto) {
 
   if (resoluciones.includes(texto)) {
     setTimeout(() => {
-      nuevaAlerta.remove(); // Eliminar la alerta después de 5 segundos
+      nuevaAlerta.remove();
+      estadosAlertas[tipo] = false; // Restablecer el estado cuando se resuelve el problema
     }, 5000);
   }
 }
