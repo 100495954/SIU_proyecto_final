@@ -7,6 +7,8 @@ const paso = 10; // Cuánto mueve cada tecla
 const persona = document.getElementById('persona');
 const mensaje = document.createElement('p'); // Elemento donde se mostrarán las alertas
 document.getElementById('controles').appendChild(mensaje); // Lo añadimos al div de controles
+const contenedorAlertas = document.createElement('div');
+document.getElementById('controles').appendChild(contenedorAlertas);
 
 // Función para actualizar la posición de la persona
 function actualizarPosicion() {
@@ -39,9 +41,11 @@ actualizarPosicion();
 // ------------------ ALERTAS ------------------
 
 function mostrarAlerta(texto) {
-  mensaje.textContent = texto;
-  mensaje.style.fontWeight = 'bold';
-  mensaje.style.color = 'green';
+  const nuevaAlerta = document.createElement('p');
+  nuevaAlerta.textContent = texto;
+  nuevaAlerta.style.fontWeight = 'bold';
+  nuevaAlerta.style.color = 'green';
+  contenedorAlertas.appendChild(nuevaAlerta);
 
   // Solo mensajes de resolución se ocultan tras 5 segundos
   const resoluciones = [
@@ -53,7 +57,7 @@ function mostrarAlerta(texto) {
 
   if (resoluciones.includes(texto)) {
     setTimeout(() => {
-      mensaje.textContent = '';
+      nuevaAlerta.remove(); // Eliminar la alerta después de 5 segundos
     }, 5000);
   }
 }
