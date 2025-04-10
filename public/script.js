@@ -186,6 +186,7 @@ async function iniciarDeteccionLuces() {
           document.getElementById('apagarLuces').style.display = 'inline-block';
         } else if (brilloPromedio <= brilloUmbral && lucesEncendidas) {
           lucesEncendidas = false;
+          mostrarAlerta('');
           document.getElementById('apagarLuces').style.display = 'none';
         }
       }
