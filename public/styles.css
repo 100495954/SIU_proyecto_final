@@ -44,18 +44,6 @@
     top: 500px;
   }
   
-  #controles,
-  #controles + div {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    justify-content: flex-start;
-    align-items: center;
-    flex: 1;
-    max-width: 300px;
-    margin-top: 10px;
-  }
-  
   button {
     width: 100%;
     padding: 10px;
