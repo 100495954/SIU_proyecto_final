@@ -184,11 +184,8 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-
-// ------------------ DETECCIÓN REAL DE CAÍDA ------------------
-
+// Detección de caída
 const aceleracionUmbral = 25;
-
 function iniciarDeteccionCaida() {
   window.addEventListener('devicemotion', (event) => {
     const acceleration = event.acceleration;
@@ -201,13 +198,13 @@ function iniciarDeteccionCaida() {
     );
 
     if (aceleracionTotal > aceleracionUmbral) {
-      mostrarAlerta('La persona ha sufrido una caída.');
+      mostrarAlerta('caida', 'La persona ha sufrido una caída.');
       if (!document.getElementById('recoger')) {
         const btn = document.createElement('button');
         btn.id = 'recoger';
         btn.textContent = 'Recoger persona';
         btn.addEventListener('click', () => {
-          mostrarAlerta('La persona ha sido ayudada.');
+          mostrarAlerta('caida', 'La persona ha sido ayudada.');
           btn.remove();
         });
         document.getElementById('controles').appendChild(btn);
@@ -216,7 +213,7 @@ function iniciarDeteccionCaida() {
   });
 }
 
-// --------------- Detección de luces -----------------------
+// Detección de luces
 const brilloUmbral = 70;
 let lucesEncendidas = false;
 async function iniciarDeteccionLuces() {
