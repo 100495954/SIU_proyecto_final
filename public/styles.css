@@ -69,8 +69,8 @@
   #mapa {
     position: relative;
     width: 100%;
-    max-width: 500px;
-    height: 500px;
+    max-width: 450px;
+    height: 450px;
     border: 2px solid #ccc;
     background-size: cover;
     background-position: center;
@@ -96,6 +96,10 @@
     background-color: #4caf50;
     color: white;
     transition: background-color 0.3s;
+  }
+
+  #boton-permiso {
+    background-color: #00109c;
   }
   
   button:hover {
