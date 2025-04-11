@@ -105,6 +105,8 @@ document.getElementById('apagarFuego').addEventListener('click', () => {
   document.getElementById('apagarFuego').style.display = 'none'; // Ocultamos el botón de apagar
 });
 
+// DETECCION SONIDO REAL GRIFO
+
 let fingerprintGrifo = [];
 let analyser, dataArray;
 
