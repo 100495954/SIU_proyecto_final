@@ -105,43 +105,90 @@ document.getElementById('apagarFuego').addEventListener('click', () => {
   document.getElementById('apagarFuego').style.display = 'none'; // Ocultamos el botón de apagar
 });
 
-// Detección de sonido del grifo
-async function iniciarDeteccionSonido() {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const source = audioContext.createMediaStreamSource(stream);
-    const analyser = audioContext.createAnalyser();
+// ------------------ DETECCION SONIDO REAL GRIFO -----------------------------
 
-    analyser.fftSize = 256;
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
+let audioContext;
+let analyserMic, analyserReference;
+let micStream;
+let referenceBuffer;
+let grifoActivado = false;
 
-    source.connect(analyser);
+async function cargarHuellaGrifo() {
+  audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
-    function detectarGrifo() {
-      analyser.getByteFrequencyData(dataArray);
-
-      const media = dataArray.slice(30, 100); // Frecuencias medias-altas
-      const promedio = media.reduce((acc, val) => acc + val, 0) / media.length;
-
-      if (promedio > 70) {
-        mostrarAlerta('grifo', '¡Se ha detectado un sonido similar a un grifo abierto!');
-        document.getElementById('apagarGrifo').style.display = 'inline-block';
-      }
-
-      requestAnimationFrame(detectarGrifo);
-    }
-
-    detectarGrifo();
-  } catch (err) {
-    console.error('Error accediendo al micrófono:', err);
-    alert('No se pudo acceder al micrófono.');
-  }
+  const response = await fetch('grifo.mp3');
+  const arrayBuffer = await response.arrayBuffer();
+  referenceBuffer = await audioContext.decodeAudioData(arrayBuffer);
 }
 
-// Detección de caída
+async function detectarSonidoGrifoReal() {
+  if (!referenceBuffer) {
+    console.error("La huella del grifo no está cargada.");
+    return;
+  }
+
+  // Captura el micrófono
+  micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  const micSource = audioContext.createMediaStreamSource(micStream);
+
+  analyserMic = audioContext.createAnalyser();
+  analyserMic.fftSize = 2048;
+  micSource.connect(analyserMic);
+
+  // Crea un análisis del sonido de referencia
+  const referenceSource = audioContext.createBufferSource();
+  referenceSource.buffer = referenceBuffer;
+  analyserReference = audioContext.createAnalyser();
+  analyserReference.fftSize = 2048;
+
+  const referenceGain = audioContext.createGain();
+  referenceGain.gain.value = 0; // silencio para no reproducir
+
+  referenceSource.connect(analyserReference).connect(referenceGain).connect(audioContext.destination);
+  referenceSource.start();
+
+  const refData = new Uint8Array(analyserReference.frequencyBinCount);
+  const micData = new Uint8Array(analyserMic.frequencyBinCount);
+
+  function compararEspectros(ref, mic) {
+    let sum = 0;
+    for (let i = 0; i < ref.length; i++) {
+      const diff = Math.abs(ref[i] - mic[i]);
+      sum += diff;
+    }
+    return sum / ref.length;
+  }
+
+  function detectar() {
+    analyserReference.getByteFrequencyData(refData);
+    analyserMic.getByteFrequencyData(micData);
+
+    const diferencia = compararEspectros(refData, micData);
+
+    if (diferencia < 25 && !grifoActivado) {
+      grifoActivado = true;
+      console.log("¡Grifo detectado!");
+      document.getElementById("apagarGrifo").style.display = "inline-block";
+      // Aquí puedes emitir el evento por socket si lo necesitas
+    }
+
+    requestAnimationFrame(detectar);
+  }
+
+  detectar();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  cargarHuellaGrifo().then(() => {
+    detectarSonidoGrifoReal();
+  });
+});
+
+
+// ------------------ DETECCIÓN REAL DE CAÍDA ------------------
+
 const aceleracionUmbral = 25;
+
 function iniciarDeteccionCaida() {
   window.addEventListener('devicemotion', (event) => {
     const acceleration = event.acceleration;
@@ -154,13 +201,13 @@ function iniciarDeteccionCaida() {
     );
 
     if (aceleracionTotal > aceleracionUmbral) {
-      mostrarAlerta('caida', 'La persona ha sufrido una caída.');
+      mostrarAlerta('La persona ha sufrido una caída.');
       if (!document.getElementById('recoger')) {
         const btn = document.createElement('button');
         btn.id = 'recoger';
         btn.textContent = 'Recoger persona';
         btn.addEventListener('click', () => {
-          mostrarAlerta('caida', 'La persona ha sido ayudada.');
+          mostrarAlerta('La persona ha sido ayudada.');
           btn.remove();
         });
         document.getElementById('controles').appendChild(btn);
@@ -169,7 +216,7 @@ function iniciarDeteccionCaida() {
   });
 }
 
-// Detección de luces
+// --------------- Detección de luces -----------------------
 const brilloUmbral = 70;
 let lucesEncendidas = false;
 async function iniciarDeteccionLuces() {
