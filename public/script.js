@@ -105,94 +105,90 @@ document.getElementById('apagarFuego').addEventListener('click', () => {
   document.getElementById('apagarFuego').style.display = 'none'; // Ocultamos el botón de apagar
 });
 
-// DETECCION SONIDO REAL GRIFO
+// ------------------ DETECCION SONIDO REAL GRIFO -----------------------------
 
-let fingerprintGrifo = [];
-let analyser, dataArray;
+let audioContext;
+let analyserMic, analyserReference;
+let micStream;
+let referenceBuffer;
+let grifoActivado = false;
 
-async function cargarSonidoReferencia(url) {
-  const response = await fetch(url);
+async function cargarHuellaGrifo() {
+  audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+  const response = await fetch('grifo.mp3');
   const arrayBuffer = await response.arrayBuffer();
-  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-  
-  const offlineContext = new OfflineAudioContext(1, audioBuffer.length, audioBuffer.sampleRate);
-  const source = offlineContext.createBufferSource();
-  source.buffer = audioBuffer;
-
-  const analyserOffline = offlineContext.createAnalyser();
-  analyserOffline.fftSize = 256;
-  const tempArray = new Uint8Array(analyserOffline.frequencyBinCount);
-
-  source.connect(analyserOffline);
-  analyserOffline.connect(offlineContext.destination);
-  source.start();
-
-  await offlineContext.startRendering();
-
-  analyserOffline.getByteFrequencyData(tempArray);
-  fingerprintGrifo = Array.from(tempArray.slice(30, 100)); // medias-altas
+  referenceBuffer = await audioContext.decodeAudioData(arrayBuffer);
 }
 
-// Asegúrate de que "grifo.mp3" esté en la carpeta pública o accesible por el navegador
-cargarSonidoReferencia("grifo.mp3"); // Por ejemplo, en la raíz del proyecto
-
-function calcularSimilitud(a, b) {
-  if (a.length !== b.length) return 0;
-  let suma = 0;
-  for (let i = 0; i < a.length; i++) {
-    suma += 1 - Math.abs(a[i] - b[i]) / 255;
-  }
-  return suma / a.length;
-}
-
-function mostrarAlerta(tipo, mensaje) {
-  console.log(mensaje); // Puedes personalizar esto
-  // Ejemplo: mostrar en pantalla o notificación visual
-}
-
-async function iniciarDeteccionSonido() {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const source = audioContext.createMediaStreamSource(stream);
-
-    analyser = audioContext.createAnalyser();
-    analyser.fftSize = 256;
-    dataArray = new Uint8Array(analyser.frequencyBinCount);
-
-    source.connect(analyser);
-
-    detectarGrifo();
-  } catch (err) {
-    console.error("Error al acceder al micrófono:", err);
-  }
-}
-
-function detectarGrifo() {
-  if (!analyser || !fingerprintGrifo.length) {
-    requestAnimationFrame(detectarGrifo);
+async function detectarSonidoGrifoReal() {
+  if (!referenceBuffer) {
+    console.error("La huella del grifo no está cargada.");
     return;
   }
 
-  analyser.getByteFrequencyData(dataArray);
-  const actual = Array.from(dataArray.slice(30, 100));
+  // Captura el micrófono
+  micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  const micSource = audioContext.createMediaStreamSource(micStream);
 
-  const similitud = calcularSimilitud(fingerprintGrifo, actual);
-  if (similitud > 0.85) {
-    mostrarAlerta('grifo', '🔊 Se detecta un sonido muy similar al grifo.');
-    document.getElementById('apagarGrifo').style.display = 'inline-block';
+  analyserMic = audioContext.createAnalyser();
+  analyserMic.fftSize = 2048;
+  micSource.connect(analyserMic);
+
+  // Crea un análisis del sonido de referencia
+  const referenceSource = audioContext.createBufferSource();
+  referenceSource.buffer = referenceBuffer;
+  analyserReference = audioContext.createAnalyser();
+  analyserReference.fftSize = 2048;
+
+  const referenceGain = audioContext.createGain();
+  referenceGain.gain.value = 0; // silencio para no reproducir
+
+  referenceSource.connect(analyserReference).connect(referenceGain).connect(audioContext.destination);
+  referenceSource.start();
+
+  const refData = new Uint8Array(analyserReference.frequencyBinCount);
+  const micData = new Uint8Array(analyserMic.frequencyBinCount);
+
+  function compararEspectros(ref, mic) {
+    let sum = 0;
+    for (let i = 0; i < ref.length; i++) {
+      const diff = Math.abs(ref[i] - mic[i]);
+      sum += diff;
+    }
+    return sum / ref.length;
   }
 
-  requestAnimationFrame(detectarGrifo);
+  function detectar() {
+    analyserReference.getByteFrequencyData(refData);
+    analyserMic.getByteFrequencyData(micData);
+
+    const diferencia = compararEspectros(refData, micData);
+
+    if (diferencia < 25 && !grifoActivado) {
+      grifoActivado = true;
+      console.log("¡Grifo detectado!");
+      document.getElementById("apagarGrifo").style.display = "inline-block";
+      // Aquí puedes emitir el evento por socket si lo necesitas
+    }
+
+    requestAnimationFrame(detectar);
+  }
+
+  detectar();
 }
 
-// Iniciar automáticamente
-iniciarDeteccionSonido();
+document.addEventListener("DOMContentLoaded", () => {
+  cargarHuellaGrifo().then(() => {
+    detectarSonidoGrifoReal();
+  });
+});
 
 
-// Detección de caída
+// ------------------ DETECCIÓN REAL DE CAÍDA ------------------
+
 const aceleracionUmbral = 25;
+
 function iniciarDeteccionCaida() {
   window.addEventListener('devicemotion', (event) => {
     const acceleration = event.acceleration;
@@ -205,13 +201,13 @@ function iniciarDeteccionCaida() {
     );
 
     if (aceleracionTotal > aceleracionUmbral) {
-      mostrarAlerta('caida', 'La persona ha sufrido una caída.');
+      mostrarAlerta('La persona ha sufrido una caída.');
       if (!document.getElementById('recoger')) {
         const btn = document.createElement('button');
         btn.id = 'recoger';
         btn.textContent = 'Recoger persona';
         btn.addEventListener('click', () => {
-          mostrarAlerta('caida', 'La persona ha sido ayudada.');
+          mostrarAlerta('La persona ha sido ayudada.');
           btn.remove();
         });
         document.getElementById('controles').appendChild(btn);
@@ -220,7 +216,7 @@ function iniciarDeteccionCaida() {
   });
 }
 
-// Detección de luces
+// --------------- Detección de luces -----------------------
 const brilloUmbral = 70;
 let lucesEncendidas = false;
 async function iniciarDeteccionLuces() {
