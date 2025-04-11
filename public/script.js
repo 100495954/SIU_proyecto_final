@@ -105,8 +105,8 @@ document.getElementById('apagarFuego').addEventListener('click', () => {
   document.getElementById('apagarFuego').style.display = 'none'; // Ocultamos el botón de apagar
 });
 
-// Detección de sonido del grifo
 let fingerprintGrifo = [];
+let analyser, dataArray;
 
 async function cargarSonidoReferencia(url) {
   const response = await fetch(url);
@@ -118,21 +118,22 @@ async function cargarSonidoReferencia(url) {
   const source = offlineContext.createBufferSource();
   source.buffer = audioBuffer;
 
-  const analyser = offlineContext.createAnalyser();
-  analyser.fftSize = 256;
-  const dataArray = new Uint8Array(analyser.frequencyBinCount);
+  const analyserOffline = offlineContext.createAnalyser();
+  analyserOffline.fftSize = 256;
+  const tempArray = new Uint8Array(analyserOffline.frequencyBinCount);
 
-  source.connect(analyser);
-  analyser.connect(offlineContext.destination);
+  source.connect(analyserOffline);
+  analyserOffline.connect(offlineContext.destination);
   source.start();
 
   await offlineContext.startRendering();
 
-  analyser.getByteFrequencyData(dataArray);
-  fingerprintGrifo = Array.from(dataArray.slice(30, 100)); // Frecuencias medias-altas
+  analyserOffline.getByteFrequencyData(tempArray);
+  fingerprintGrifo = Array.from(tempArray.slice(30, 100)); // medias-altas
 }
 
-cargarSonidoReferencia("C:\Users\aldxt\Downloads\grifo.mp3");
+// Asegúrate de que "grifo.mp3" esté en la carpeta pública o accesible por el navegador
+cargarSonidoReferencia("grifo.mp3"); // Por ejemplo, en la raíz del proyecto
 
 function calcularSimilitud(a, b) {
   if (a.length !== b.length) return 0;
@@ -140,24 +141,53 @@ function calcularSimilitud(a, b) {
   for (let i = 0; i < a.length; i++) {
     suma += 1 - Math.abs(a[i] - b[i]) / 255;
   }
-  return suma / a.length; // 1.0 = idéntico, 0.0 = diferente
+  return suma / a.length;
+}
+
+function mostrarAlerta(tipo, mensaje) {
+  console.log(mensaje); // Puedes personalizar esto
+  // Ejemplo: mostrar en pantalla o notificación visual
+}
+
+async function iniciarDeteccionSonido() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const source = audioContext.createMediaStreamSource(stream);
+
+    analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256;
+    dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+    source.connect(analyser);
+
+    detectarGrifo();
+  } catch (err) {
+    console.error("Error al acceder al micrófono:", err);
+  }
 }
 
 function detectarGrifo() {
+  if (!analyser || !fingerprintGrifo.length) {
+    requestAnimationFrame(detectarGrifo);
+    return;
+  }
+
   analyser.getByteFrequencyData(dataArray);
-  const actual = dataArray.slice(30, 100);
+  const actual = Array.from(dataArray.slice(30, 100));
 
-  if (fingerprintGrifo.length > 0) {
-    const similitud = calcularSimilitud(fingerprintGrifo, actual);
-
-    if (similitud > 0.85) { // Puedes ajustar este umbral
-      mostrarAlerta('grifo', '🔊 Se detecta un sonido muy similar al grifo.');
-      document.getElementById('apagarGrifo').style.display = 'inline-block';
-    }
+  const similitud = calcularSimilitud(fingerprintGrifo, actual);
+  if (similitud > 0.85) {
+    mostrarAlerta('grifo', '🔊 Se detecta un sonido muy similar al grifo.');
+    document.getElementById('apagarGrifo').style.display = 'inline-block';
   }
 
   requestAnimationFrame(detectarGrifo);
 }
+
+// Iniciar automáticamente
+iniciarDeteccionSonido();
+
 
 // Detección de caída
 const aceleracionUmbral = 25;
