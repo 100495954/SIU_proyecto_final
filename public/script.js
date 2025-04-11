@@ -1,13 +1,328 @@
+// ------------------------------ MAPA ------------------------------
+const svgContainer = document.getElementById('svgContainer');
+svgContainer.setAttribute("viewBox", "0 0 500 500");
+
+function adjustCoordinates(path, shiftX, shiftY, scale) {
+  return path.map(point => [(point[0] + shiftX) * scale, (point[1] + shiftY) * scale]);
+}
+
+function drawPolygon(path, className) {
+  const polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+  polygon.setAttribute("points", path.map(point => point.join(",")).join(" "));
+  polygon.setAttribute("class", className);
+  svgContainer.appendChild(polygon);
+}
+
+const roomPath = [
+  [ 2, 0],
+  [ 4, 0],
+  [ 6, 0],
+  [ 8, 0],
+  [ 10, 0],
+  [ 12, 0],
+  [ 12, -2],
+  [ 14, -2],
+  [ 14, 0],
+  [ 14, 2],
+  [ 14, 4],
+  [ 16, 4],
+  [ 18, 4],
+  [ 20, 4],
+  [ 22, 4],
+  [ 24, 4],
+  [ 26, 4],
+  [ 28, 4],
+  [ 30, 4],
+  [ 32, 4],
+  [ 34, 4],
+  [ 36, 4],
+  [ 38, 4],
+  [ 40, 4],
+  [ 42, 4],
+  [ 44, 4],
+  [ 44, 2],
+  [ 44, 0],
+  [ 44, -2],
+  [ 44, -4],
+  [ 42, -4],
+  [ 42, -6],
+  [ 44, -6],
+  [ 46, -6],
+  [ 48, -6],
+  [ 50, -6],
+  [ 52, -6],
+  [ 54, -6],
+  [ 56, -6],
+  [ 58, -6],
+  [ 58, -8],
+  [ 58, -10],
+  [ 58, -12],
+  [ 58, -14],
+  [ 58, -16],
+  [ 58, -18],
+  [ 56, -18],
+  [ 54, -18],
+  [ 52, -18],
+  [ 50, -18],
+  [ 48, -18],
+  [ 46, -18],
+  [ 44, -18],
+  [ 42, -18],
+  [ 40, -18],
+  [ 40, -16],
+  [ 40, -14],
+  [ 40, -12],
+  [ 40, -10],
+  [ 40, -8],
+  [ 40, -6],
+  [ 40, -4],
+  [ 38, -4],
+  [ 38, -6],
+  [ 38, -8],
+  [ 38, -10],
+  [ 38, -12],
+  [ 36, -12],
+  [ 34, -12],
+  [ 32, -12],
+  [ 30, -12],
+  [ 28, -12],
+  [ 26, -12],
+  [ 24, -12],
+  [ 22, -12],
+  [ 20, -12],
+  [ 18, -12],
+  [ 16, -12],
+  [ 14, -12],
+  [ 14, -10],
+  [ 14, -8],
+  [ 14, -6],
+  [ 14, -4],
+  [ 12, -4],
+  [ 12, -6],
+  [ 12, -8],
+  [ 12, -10],
+  [ 12, -12],
+  [ 12, -14],
+  [ 14, -14],
+  [ 16, -14],
+  [ 18, -14],
+  [ 20, -14],
+  [ 22, -14],
+  [ 24, -14],
+  [ 26, -14],
+  [ 28, -14],
+  [ 30, -14],
+  [ 32, -14],
+  [ 34, -14],
+  [ 36, -14],
+  [ 38, -14],
+  [ 38, -16],
+  [ 38, -18],
+  [ 38, -20],
+  [ 40, -20],
+  [ 42, -20],
+  [ 44, -20],
+  [ 46, -20],
+  [ 48, -20],
+  [ 50, -20],
+  [ 52, -20],
+  [ 54, -20],
+  [ 56, -20],
+  [ 58, -20],
+  [ 58, -22],
+  [ 58, -24],
+  [ 58, -26],
+  [ 58, -28],
+  [ 58, -30],
+  [ 58, -32],
+  [ 56, -32],
+  [ 54, -32],
+  [ 52, -32],
+  [ 50, -32],
+  [ 48, -32],
+  [ 46, -32],
+  [ 44, -32],
+  [ 42, -32],
+  [ 40, -32],
+  [ 40, -34],
+  [ 40, -36],
+  [ 40, -38],
+  [ 42, -38],
+  [ 42, -36],
+  [ 42, -34],
+  [ 44, -34],
+  [ 46, -34],
+  [ 48, -34],
+  [ 50, -34],
+  [ 52, -34],
+  [ 54, -34],
+  [ 56, -34],
+  [ 58, -34],
+  [ 58, -36],
+  [ 58, -38],
+  [ 58, -40],
+  [ 58, -42],
+  [ 58, -44],
+  [ 56, -44],
+  [ 54, -44],
+  [ 52, -44],
+  [ 50, -44],
+  [ 48, -44],
+  [ 46, -44],
+  [ 44, -44],
+  [ 42, -44],
+  [ 42, -42],
+  [ 42, -40],
+  [ 40, -40],
+  [ 40, -42],
+  [ 40, -44],
+  [ 40, -46],
+  [ 40, -48],
+  [ 42, -48],
+  [ 42, -46],
+  [ 44, -46],
+  [ 46, -46],
+  [ 48, -46],
+  [ 50, -46],
+  [ 52, -46],
+  [ 54, -46],
+  [ 56, -46],
+  [ 58, -46],
+  [ 58, -48],
+  [ 58, -50],
+  [ 58, -52],
+  [ 58, -54],
+  [ 58, -56],
+  [ 56, -56],
+  [ 54, -56],
+  [ 52, -56],
+  [ 50, -56],
+  [ 48, -56],
+  [ 46, -56],
+  [ 44, -56],
+  [ 42, -56],
+  [ 42, -54],
+  [ 42, -52],
+  [ 42, -50],
+  [ 42, -50],
+  [ 40, -50],
+  [ 40, -52],
+  [ 38, -52],
+  [ 36, -52],
+  [ 34, -52],
+  [ 34, -48],
+  [ 34, -46],
+  [ 34, -44],
+  [ 32, -44],
+  [ 32, -46],
+  [ 30, -46],
+  [ 28, -46],
+  [ 26, -46],
+  [ 24, -46],
+  [ 22, -46],
+  [ 20, -46],
+  [ 18, -46],
+  [ 18, -44],
+  [ 18, -42],
+  [ 18, -40],
+  [ 18, -38],
+  [ 18, -36],
+  [ 18, -34],
+  [ 20, -34],
+  [ 22, -34],
+  [ 24, -34],
+  [ 26, -34],
+  [ 28, -34],
+  [ 30, -34],
+  [ 32, -34],
+  [ 32, -36],
+  [ 32, -38],
+  [ 32, -40],
+  [ 34, -40],
+  [ 34, -38],
+  [ 34, -36],
+  [ 34, -34],
+  [ 34, -32],
+  [ 32, -32],
+  [ 30, -32],
+  [ 28, -32],
+  [ 26, -32],
+  [ 24, -32],
+  [ 22, -32],
+  [ 20, -32],
+  [ 18, -32],
+  [ 16, -32],
+  [ 14, -32],
+  [ 12, -32],
+  [ 10, -32],
+  [ 8, -32],
+  [ 6, -32],
+  [ 4, -32],
+  [ 2, -32],
+  [ 2, -30],
+  [ 2, -28],
+  [ 2, -26],
+  [ 2, -24],
+  [ 2, -22],
+  [ 2, -20],
+  [ 2, -18],
+  [ 2, -16],
+  [ 2, -14],
+  [ 2, -12],
+  [ 2, -10],
+  [ 2, -8],
+  [ 2, -6],
+  [ 2, -4],
+  [ 2, -2],
+  [ 2, 0]
+];
+
+// Ajuste de coordenadas
+const shiftX = 0;
+const shiftY = 60;
+const scale = 7.5;
+
+// Dibujar contorno principal
+const adjustedRoomPath = adjustCoordinates(roomPath, shiftX, shiftY, scale);
+drawPolygon(adjustedRoomPath, "outerRoom");
+
+// Definición de cuartos (agregar 'const' para evitar variable global)
+const cuartos = { 
+  'labels': ['salon', 'cocina', 'pasillo', 'dormitorio1', 'dormitorio2', 'dormitorio3', 'bano'],
+  'polygonos': [[[58,-20],[38,-20],[38,-14],[12,-14],[12,0],[2,0],[2,-32],[58,-32],[58,-20]],
+  [[14,4],[44,4],[44,-4],[38,-4],[38,-12],[14,-12],[14,4]],
+  [[34,-32],[34,-52],[40,-52],[40,-32]],
+  [[58,-6],[40,-18]],
+  [[32,-46],[18,-34]],
+  [[42,-56],[58,-46]],
+  [[58,-44],[42,-34]]]
+};
+
+function getRectangleCorners(A, C) {
+  return [A, [A[0], C[1]], C, [C[0], A[1]]];
+}
+
+// Dibujar habitaciones internas
+cuartos.polygonos.forEach((room, i) => {
+  let adjustedPath;
+  if (room.length === 2) {
+    adjustedPath = adjustCoordinates(getRectangleCorners(...room), shiftX, shiftY, scale);
+  } else {
+    adjustedPath = adjustCoordinates(room, shiftX, shiftY, scale);
+  }
+  drawPolygon(adjustedPath, cuartos.labels[i]);
+});
+
 // Inicializamos la posición de la persona
 let x = 240; // posición horizontal
-let y = 500; // posición vertical
+let y = 480; // posición vertical
 const paso = 10; // Cuánto mueve cada tecla
 
 // Elementos del DOM
 const persona = document.getElementById('persona');
 const mensaje = document.createElement('p'); // Elemento donde se mostrarán las alertas
 document.getElementById('controles').appendChild(mensaje); // Lo añadimos al div de controles
-const svg = document.getElementById("svgContainer"); // Replace with your SVG element's actual ID
+const svg = document.getElementById("svgContainer");
 const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
 
 function CrearPersona(x, y, circle, svg) {
@@ -20,7 +335,6 @@ function CrearPersona(x, y, circle, svg) {
 
   return circle;
 }
-
 
 // Estado de las alertas para cada tipo
 const estadosAlertas = {
@@ -76,13 +390,13 @@ function mostrarAlerta(tipo, texto) {
   nuevaAlerta.textContent = texto;
   nuevaAlerta.style.fontWeight = 'bold';
   nuevaAlerta.style.color = 'green';
+  nuevaAlerta.id = `alerta-${tipo}`; // ID único
   contenedorAlertas.appendChild(nuevaAlerta);
 
-  // Solo los mensajes de resolución se ocultan tras 5 segundos
+  // Solo los mensajes de resolución se ocultan tras 10 segundos
   const resoluciones = [
     'El grifo está apagado.',
     'Las luces están apagadas.',
-    'El fuego está apagado.',
     'La persona ha sido ayudada.'
   ];
 
@@ -90,20 +404,9 @@ function mostrarAlerta(tipo, texto) {
     setTimeout(() => {
       nuevaAlerta.remove();
       estadosAlertas[tipo] = false; // Restablecer el estado cuando se resuelve el problema
-    }, 5000);
+    }, 10000);
   }
 }
-
-// Botón de control para el fuego de la cocina
-document.getElementById('encenderFuego').addEventListener('click', () => {
-  mostrarAlerta('fuego', 'El fuego está encendido en la cocina.');
-  document.getElementById('apagarFuego').style.display = 'inline-block'; // Mostramos el botón de apagar
-});
-
-document.getElementById('apagarFuego').addEventListener('click', () => {
-  mostrarAlerta('fuego', 'El fuego está apagado.');
-  document.getElementById('apagarFuego').style.display = 'none'; // Ocultamos el botón de apagar
-});
 
 // Detección de sonido del grifo
 async function iniciarDeteccionSonido() {
@@ -125,7 +428,7 @@ async function iniciarDeteccionSonido() {
       const media = dataArray.slice(30, 100); // Frecuencias medias-altas
       const promedio = media.reduce((acc, val) => acc + val, 0) / media.length;
 
-      if (promedio > 70) {
+      if (promedio > 140) {
         mostrarAlerta('grifo', '¡Se ha detectado un sonido similar a un grifo abierto!');
         document.getElementById('apagarGrifo').style.display = 'inline-block';
       }
@@ -139,6 +442,22 @@ async function iniciarDeteccionSonido() {
     alert('No se pudo acceder al micrófono.');
   }
 }
+
+// Botón para apagar el grifo
+document.getElementById('apagarGrifo').addEventListener('click', () => {
+  // Eliminar la alerta original
+  const alertaOriginal = document.getElementById('alerta-grifo');
+  if (alertaOriginal) {
+    alertaOriginal.remove();
+  }
+  
+  // Mostrar mensaje de resolución
+  mostrarAlerta('grifo', 'El grifo está apagado.');
+  document.getElementById('apagarGrifo').style.display = 'none';
+  
+  // Restablecer estado inmediatamente
+  estadosAlertas.grifo = false;
+});
 
 // Detección de caída
 const aceleracionUmbral = 25;
@@ -160,8 +479,16 @@ function iniciarDeteccionCaida() {
         btn.id = 'recoger';
         btn.textContent = 'Recoger persona';
         btn.addEventListener('click', () => {
+          // Eliminar alerta de caída
+          const alertaCaida = document.getElementById('alerta-caida');
+          if (alertaCaida) alertaCaida.remove();
+
+          // Mostrar resolución
           mostrarAlerta('caida', 'La persona ha sido ayudada.');
           btn.remove();
+          
+          // Restablecer estado
+          estadosAlertas.caida = false;
         });
         document.getElementById('controles').appendChild(btn);
       }
@@ -206,6 +533,12 @@ async function iniciarDeteccionLuces() {
           document.getElementById('apagarLuces').style.display = 'inline-block';
         } else if (brilloPromedio <= brilloUmbral && lucesEncendidas) {
           lucesEncendidas = false;
+          // Eliminar alerta existente
+          const alertaLuces = document.getElementById('alerta-luces');
+          if (alertaLuces) alertaLuces.remove();
+
+          // Mostrar resolución y restablecer estado
+          mostrarAlerta('luces', 'Las luces están apagadas.');
           document.getElementById('apagarLuces').style.display = 'none';
         }
       }
@@ -221,19 +554,23 @@ async function iniciarDeteccionLuces() {
   }
 }
 
-// ----------------------PERMISOS------------------------
-// Modificar la función de permisos para incluir la cámara
-document.addEventListener('DOMContentLoaded', () => {
-  const btnPermiso = document.createElement('button');
-  btnPermiso.textContent = 'Activar sensores';
-  btnPermiso.style.position = 'absolute';
-  btnPermiso.style.top = '10px';
-  btnPermiso.style.right = '10px';
-  document.body.appendChild(btnPermiso);
+// Botón para apagar luces
+document.getElementById('apagarLuces').addEventListener('click', () => {
+  const alertaOriginal = document.getElementById('alerta-luces');
+  if (alertaOriginal) alertaOriginal.remove();
+  
+  mostrarAlerta('luces', 'Las luces están apagadas.');
+  document.getElementById('apagarLuces').style.display = 'none';
+  estadosAlertas.luces = false;
+});
 
+// Pedir permisos al usuario para acceder a los sensores, la cámara y el micrófono
+document.addEventListener('DOMContentLoaded', () => {
+  const btnPermiso = document.getElementById('boton-permiso')
   btnPermiso.addEventListener('click', async () => {
     if (typeof DeviceMotionEvent?.requestPermission === 'function') {
       try {
+        // Pedir permiso para el sensor de movimiento
         const response = await DeviceMotionEvent.requestPermission();
         if (response === 'granted') {
           iniciarDeteccionCaida();
