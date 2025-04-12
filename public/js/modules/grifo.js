@@ -18,7 +18,7 @@ export function iniciarDeteccionSonido() {
         const media = dataArray.slice(30, 100);
         const promedio = media.reduce((acc, val) => acc + val, 0) / media.length;
 
-        if (promedio > 140) {
+        if (promedio > 110) {
           mostrarAlerta('grifo', '¡Se ha detectado un sonido similar a un grifo abierto!');
           const btn = document.getElementById('apagarGrifo');
           if (btn) btn.style.display = 'inline-block';
@@ -41,9 +41,11 @@ export function configurarBotonApagarGrifo() {
   if (!btn) return;
 
   btn.addEventListener('click', () => {
-    const alertaOriginal = document.getElementById('alerta-grifo');
-    if (alertaOriginal) alertaOriginal.remove();
+    // Eliminar alerta de sonido del grifo
+    const alertaGrifo = document.getElementById('alerta-grifo');
+    if (alertaGrifo) alertaGrifo.remove();
 
+    // Mostrar resolución
     mostrarAlerta('grifo', 'El grifo está apagado.');
     btn.style.display = 'none';
 

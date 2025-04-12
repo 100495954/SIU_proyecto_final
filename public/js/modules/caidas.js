@@ -14,24 +14,8 @@ export function iniciarDeteccionCaida() {
 
     if (aceleracionTotal > aceleracionUmbral) {
       mostrarAlerta('caida', 'La persona ha sufrido una caída.');
-      if (!document.getElementById('recoger')) {
-        const btn = document.createElement('button');
-        btn.id = 'recoger';
-        btn.textContent = 'Recoger persona';
-        btn.addEventListener('click', () => {
-          // Eliminar alerta de caída
-          const alertaCaida = document.getElementById('alerta-caida');
-          if (alertaCaida) alertaCaida.remove();
-
-          // Mostrar resolución
-          mostrarAlerta('caida', 'La persona ha sido ayudada.');
-          btn.remove();
-          
-          // Restablecer estado
-          estadosAlertas.caida = false;
-        });
-        document.getElementById('controles').appendChild(btn);
-      }
+      const btn = document.getElementById('recoger');
+      if (btn) btn.style.display = 'inline-block';
     }
   });
 }
