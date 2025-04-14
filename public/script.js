@@ -1,25 +1,9 @@
-// Inicializamos la posición de la persona
-let x = 240; // posición horizontal
-let y = 500; // posición vertical
-const paso = 10; // Cuánto mueve cada tecla
+
 
 // Elementos del DOM
-const persona = document.getElementById('persona');
 const mensaje = document.createElement('p'); // Elemento donde se mostrarán las alertas
 document.getElementById('controles').appendChild(mensaje); // Lo añadimos al div de controles
-const svg = document.getElementById("svgContainer"); // Replace with your SVG element's actual ID
-const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
 
-function CrearPersona(x, y, circle, svg) {
-  circle.setAttribute("cx", x);
-  circle.setAttribute("cy", y);
-  circle.setAttribute("r", 5);
-  circle.setAttribute("fill", "red");
-
-  svg.appendChild(circle);
-
-  return circle;
-}
 
 
 // Estado de las alertas para cada tipo
@@ -37,28 +21,7 @@ document.getElementById('controles').appendChild(contenedorAlertas);
 // Función para actualizar la posición de la persona
 
 
-// Movemos la persona según las flechas del teclado
-document.addEventListener('keydown', (e) => {
-  switch (e.key) {
-    case 'ArrowUp':
-      y = Math.max(0, y - paso);  // Límite superior
-      break;
-    case 'ArrowDown':
-      y = Math.min(480, y + paso); // Límite inferior
-      break;
-    case 'ArrowLeft':
-      x = Math.max(0, x - paso);  // Límite izquierdo
-      break;
-    case 'ArrowRight':
-      x = Math.min(480, x + paso); // Límite derecho
-      break;
-  }
-  circle.setAttribute("cx", x);
-  circle.setAttribute("cy", y);
-});
 
-// Llamamos a la función de inicialización
-CrearPersona(x,y, circle, svg);
 
 // ------------------ ALERTAS ------------------
 
