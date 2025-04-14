@@ -76,7 +76,7 @@
 <script>
 
   let x = 60; // posición horizontal
-  let y = 440; // posición vertical
+  let y = 400; // posición vertical
   const paso = 10; // Cuánto mueve cada tecla
   // Mapeo de la casa
   let roomPath = [
@@ -450,6 +450,26 @@
       return [A, B, C, D];
     }
 
+  function moverPersona(x, y) {
+    let cuarto = buscaCuarto(x, y, updatedRooms); // Llamamos a la función para buscar el cuarto
+    console.log(cuarto);
+    if (cuarto) {
+      let elemento = document.querySelector(`.${cuarto}`);
+      elemento.classList.add('seleccionado'); // Add the class to selected room
+
+      cuartos['labels'].forEach(element => {
+        if (element !== cuarto) {
+          let otroElemento = document.querySelector(`.${element}`);
+          otroElemento.classList.remove('seleccionado'); // Remove the class from others
+        }
+      });
+    } else {
+      console.log("Fuera de la casa");
+    }
+
+    circle.setAttribute("cx", x);
+    circle.setAttribute("cy", y);
+  }
   
   let { minX, minY, maxX, maxY } = conseguirminmaxcasa(roomPath);
   scale = obtenerfatorescalado(roomPath) - 1;
@@ -482,6 +502,17 @@
       elementos.style.fill = 'rgb(223, 220, 95)';}
   });
 
+  socket.on("Resetear", (data) => {
+    let lights = [];
+    console.log(data);
+    [x,y],lights = data;    
+    moverPersona(x,y);
+    lights.forEach((element) => {
+      let elementos = document.querySelector(`.${element}`);
+      elementos.style.fill = 'rgb(223, 220, 95)';
+    });
+  });
+
   // Movemos la persona según las flechas del teclado
   socket.on('Mover', (data) => {
     console.log(data);
@@ -499,24 +530,7 @@
         x = Math.min(480, x + paso); // Límite derecho
         break;
     }
-    let cuarto = buscaCuarto(x, y, updatedRooms); // Llamamos a la función para buscar el cuarto
-    console.log(cuarto);
-    if (cuarto) {
-      let elemento = document.querySelector(`.${cuarto}`);
-      elemento.classList.add('seleccionado'); // Add the class to selected room
-
-      cuartos['labels'].forEach(element => {
-        if (element !== cuarto) {
-          let otroElemento = document.querySelector(`.${element}`);
-          otroElemento.classList.remove('seleccionado'); // Remove the class from others
-        }
-      });
-    } else {
-      console.log("Fuera de la casa");
-    }
-
-    circle.setAttribute("cx", x);
-    circle.setAttribute("cy", y);
+    moverPersona(x, y);
   });
 
   // Llamamos a la función de inicialización

@@ -1,8 +1,10 @@
-import { io } from "socket.io-client";
 export function inicializarMapa() {
+
+  let room;
+  let A, B;
   
   let x = 60; // posición horizontal
-  let y = 440; // posición vertical
+  let y = 400; // posición vertical
   const paso = 10; // Cuánto mueve cada tecla
   // Mapeo de la casa
   let roomPath = [
@@ -284,7 +286,6 @@ export function inicializarMapa() {
 
   const svgContainer = document.getElementById('svgContainer');
   const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-  const persona = document.getElementById('persona');
   const svg = svgContainer;
   const svgWidth = svg.width.baseVal.value;
   const svgHeight = svg.height.baseVal.value;
@@ -378,10 +379,10 @@ export function inicializarMapa() {
 
   
   let { minX, minY, maxX, maxY } = conseguirminmaxcasa(roomPath);
-  scale = obtenerfatorescalado(roomPath) - 1;
+  let scale = obtenerfatorescalado(roomPath) - 1;
 
   roomPath = adjustCoordinates(roomPath,-(minX-5),-(minY-5), scale); // HAcemos que la casa esté centrada en el SVG
-
+  
   drawPolygon(roomPath, 'outerRoom');
   // Adjust and draw the inner room
   let updatedRooms = [];
@@ -414,8 +415,10 @@ export function inicializarMapa() {
 
   // Movemos la persona según las flechas del teclado
   document.addEventListener('keydown', (e) => {
+    console.log(e.key);
     switch (e.key) {
       case 'ArrowUp':
+        console.log('Arriba');
         socket.emit('Mover', e.key);
         y = Math.max(0, y - paso);  // Límite superior
         break;
@@ -433,7 +436,6 @@ export function inicializarMapa() {
         break;
     }
     let cuarto = buscaCuarto(x, y, updatedRooms); // Llamamos a la función para buscar el cuarto
-    console.log(cuarto);
     if (cuarto) {
       let elemento = document.querySelector(`.${cuarto}`);
       elemento.classList.add('seleccionado'); // Add the class to selected room
@@ -452,7 +454,20 @@ export function inicializarMapa() {
     circle.setAttribute("cy", y);
   });
 
+  
+
   // Llamamos a la función de inicialización
   CrearPersona(x,y, circle, svg);
-
+  socket.on('volver', () => {
+    let lights = [];
+    // Calcular el estado de las luces
+    cuartos.labels.forEach(className => {
+      const elemento = document.querySelector(`.${className}`);
+          if (elemento.style.fill === 'rgb(223, 220, 95)') {
+          lights.push(className);
+        }
+        });
+    let status_actual = [[x,y],lights];
+    socket.emit('Resetear', status_actual)
+  })
 }

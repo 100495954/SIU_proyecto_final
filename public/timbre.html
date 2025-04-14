@@ -1,10 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+        <script src="/socket.io/socket.io.js"></script> <!-- Librería Socket.io --></head>
     <h1>Modo Timbre</h1>
     <button class="volver"></button>
 </html>
 <script>
+    const socket = io(); // Conexión al servidor Socket.io
     document.querySelector('.volver').addEventListener('click', function() {
+        socket.emit('volver');
         window.location.href = 'cuidador.html';
     });
 </script>
