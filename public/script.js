@@ -233,3 +233,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+// ------------------ Comunicación con la otra pantalla ------------------
+
+const socket = io(); // Conexión a Socket.io
+document.querySelector('#llamar').addEventListener('click', () => {
+  socket.emit('Alerta', 'Llamada'); // Emitir evento de caída
+})
+document.querySelector('#timbre').addEventListener('click', () => {
+  socket.emit('Alerta', 'Timbre'); // Emitir evento de timbre
+})
+
+// socket.emit('Alerta', 'Caida') // Poner este código para cambiar el estado de la pantalla del cuidador a modo caída
+// socket.emit('Alerta', 'Timbre') // Poner este código para cambiar el estado de la pantalla del cuidador a modo timbre

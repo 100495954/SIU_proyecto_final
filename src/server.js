@@ -18,12 +18,22 @@ app.use(express.static('public'));
 io.on('connection', (socket) => {
   console.log('Nuevo cliente conectado');
 
-  // Recibir mensajes del cliente
-  socket.on('mensaje_cliente', (data) => {
-    console.log('Mensaje del cliente:', data);
-    
-    // Enviar un mensaje de vuelta al cliente
-    socket.emit('mensaje_servidor', '¡Hola desde el servidor!');
+  // Los mensajes para manejar el movimiento de la persona en la casa
+  socket.on('Mover', (data) => {
+    console.log('Movimiento recibido:', data);
+    socket.broadcast.emit('Mover', data); // Relay to others
+  });
+
+  // Los mensajes para manejar las luces de la casa
+  socket.on('Luces', (data) => {
+    console.log('Luces de ',data, ' cambiadas');
+    socket.broadcast.emit('Luces', data); // Relay to others
+  });
+
+  // Los mensajes para manejar las alertas de la casa
+  socket.on('Alerta', (data) => {
+    console.log('Alerta de ',data);
+    socket.broadcast.emit('Alerta', data); // Relay to others
   });
 
   // Cuando un cliente se desconecta

@@ -5,7 +5,6 @@
   <title>Mapa Interactivo de Casa</title>
   <link rel="stylesheet" href="styles.css"> <!-- Conectamos el CSS -->
   <script src="/socket.io/socket.io.js"></script> <!-- Librería Socket.io -->
-  <script type="module" src="script.js" defer></script> <!-- Archivo JS con módulos ES -->
   <style>
     body {
       margin: 0;
@@ -73,20 +72,6 @@
       <svg id="svgContainer"></svg>
     </div>
     </svg>
-    </div>
-    <div id="controles">
-      <button id="encenderFuego">Encender fuego</button>
-    </div>
-    
-    <div>
-      <button id="apagarGrifo" style="display: none;">Apagar grifo</button>
-      <button id="apagarLuces" style="display: none;">Apagar luces</button>
-      <button id="apagarFuego" style="display: none;">Apagar fuego</button>
-      <button id="recoger" style="display: none;">Recoger</button>
-      <button id="llamar" >Llamar</button> 
-      <button id="timbre">Timbre</button>
-    </div>
-  </div>
 </body>
 <script>
 
@@ -488,36 +473,29 @@
   }
   
   // Loop through each class and add event listener
-  cuartos.labels.forEach(className => {
-    const elementos = document.querySelectorAll(`.${className}`);
-    elementos.forEach(el => {
-      el.addEventListener('click', () => {
-        socket.emit('Luces', className);
-        if (el.style.fill === 'rgb(223, 220, 95)') {
-        el.style.fill = 'rgb(190, 190, 190)';
-      } else {
-        el.style.fill = 'rgb(223, 220, 95)';}
-      });
-    });
+  socket.on('Luces', (className) => {
+    console.log('.',className);
+    let elementos = document.querySelector(`.${className}`);
+    if (elementos.style.fill === 'rgb(223, 220, 95)') {
+      elementos.style.fill = 'rgb(190, 190, 190)';
+    } else {
+      elementos.style.fill = 'rgb(223, 220, 95)';}
   });
 
   // Movemos la persona según las flechas del teclado
-  document.addEventListener('keydown', (e) => {
-    switch (e.key) {
+  socket.on('Mover', (data) => {
+    console.log(data);
+    switch (data) {
       case 'ArrowUp':
-        socket.emit('Mover', e.key);
         y = Math.max(0, y - paso);  // Límite superior
         break;
       case 'ArrowDown':
-        socket.emit('Mover', e.key);
         y = Math.min(480, y + paso); // Límite inferior
         break;
       case 'ArrowLeft':
-        socket.emit('Mover', e.key);
         x = Math.max(0, x - paso);  // Límite izquierdo
         break;
       case 'ArrowRight':
-        socket.emit('Mover', e.key);
         x = Math.min(480, x + paso); // Límite derecho
         break;
     }
@@ -544,7 +522,15 @@
   // Llamamos a la función de inicialización
   CrearPersona(x,y, circle, svg);
 
-  
+  socket.on('Alerta', (data) => {
+    console.log(data);
+    if (data == 'Llamada') {
+      window.location.href = "llamada.html";
+    } else if (data == 'Timbre') {
+      window.location.href = "timbre.html";
+    }
+  });
+
 
 </script>
 </html>
