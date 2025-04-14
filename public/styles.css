@@ -15,7 +15,6 @@ h1 {
   text-align: center;
   margin-bottom: 10px;
 }
-
 svg {
   position: absolute;
   top: 0;
@@ -30,33 +29,40 @@ svg {
   stroke-width: 3;
 }
 
-.cocina, .pasillo, .salon, .dormitorio1, .dormitorio2, .dormitorio3, .baño {
+.cocina, .pasillo, .salon, .dormitorio1, .dormitorio2, .dormitorio3, .bano {
   opacity: 0.5;
   stroke: rgba(0, 0, 0, 0.297);
   stroke-width: 2;
 }
 
+.seleccionado {
+  fill: hsl(194, 86%, 52%) !important; 
+  stroke: black;
+  stroke-width: 3;
+}
+
 .cocina {
-  fill: yellow;
+  fill: rgb(190, 190, 190);
 }
 .pasillo {
-  fill: blue;
+  fill: rgb(190, 190, 190);
 }
 .salon {
-  fill: green;
+  fill: rgb(190, 190, 190);
 }
 .dormitorio1 {
-  fill: red;
+  fill: rgb(190, 190, 190);
 } 
 .dormitorio2 {
-  fill: orange;
+  fill: rgb(190, 190, 190);
 }
 .dormitorio3 {
-  fill: purple;
+  fill: rgb(190, 190, 190);
 }
-.baño {
-  fill: pink;
+.bano {
+  fill: rgb(190, 190, 190);
 }
+
 
 .contenedor {
   display: flex;
