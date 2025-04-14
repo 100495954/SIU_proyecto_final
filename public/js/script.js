@@ -1,6 +1,7 @@
 import { inicializarMapa } from './modules/mapa.js';
 import { inicializarPermisos } from './modules/permisos.js';
 import { inicializarPersona } from './modules/persona.js';
+import { io } from "socket.io-client";
 
 // Inicializar elementos
 inicializarMapa();
