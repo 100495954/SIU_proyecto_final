@@ -1,3 +1,4 @@
+import { io } from "socket.io-client";
 export function inicializarMapa() {
   
   let x = 60; // posición horizontal
