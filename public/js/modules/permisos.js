@@ -1,6 +1,7 @@
 import { iniciarDeteccionCaida, configurarBotonRecoger } from './caidas.js';
 import { iniciarDeteccionSonido, configurarBotonApagarGrifo } from './grifo.js';
 import { iniciarDeteccionLuces, configurarBotonApagarLuces } from './luces.js';
+import { timbre, configurarBotonRechazar } from './timbre.js';
 
 // Función para solicitar permisos y activar todas las funcionalidades
 export function inicializarPermisos() {
@@ -53,6 +54,8 @@ function iniciarFuncionalidadesMovimiento() {
   configurarBotonRecoger();
   iniciarDeteccionSonido();
   configurarBotonApagarGrifo();
+  timbre();
+  configurarBotonRechazar();
 }
 
 // Función auxiliar para iniciar funcionalidades relacionadas con la cámara

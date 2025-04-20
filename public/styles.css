@@ -148,3 +148,109 @@ p {
     font-size: 26px;
   }
 }
+#llamada-timbre {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90vw;
+  height: 80vh;
+  background-color: black;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  border-radius: 20px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+  font-weight: bold;
+  gap: 20px;
+  padding: 20px;
+  text-align: center;
+}
+
+#llamada-timbre p {
+  font-size: 2.5rem;
+  margin-bottom: 30px;
+}
+
+#llamada-timbre button {
+  font-size: 1.8rem;
+  padding: 15px 30px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  color: white;
+  width: 80%;
+  max-width: 300px;
+}
+
+#acp {
+  background-color: green;
+}
+
+#rechazar {
+  background-color: #ff0000;
+}
+
+#videollamada {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: black; /* Este fondo queda detrás del video, así que está bien */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+#video {
+  width: 100%;
+  height: auto;
+  flex-grow: 1;
+  background: transparent;
+  object-fit: cover; /* Hace que el video llene el contenedor sin deformarse */
+}
+
+#dcl {
+  background-color: red;
+  color: white;
+  padding: 10px 20px;
+  font-size: 16px;
+  margin-bottom: 7rem; /* Aquí aumentamos el margen */
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  align-self: center;
+  transition: background-color 0.3s ease;
+}
+
+#dcl:hover {
+  background-color: darkred;
+}
+
+#dcl:active {
+  background-color: crimson;
+}
+
+
+/* Adaptación para móviles pequeños */
+@media (max-width: 600px) {
+  #llamada-timbre {
+    width: 95vw;
+    height: 90vh;
+    gap: 15px;
+  }
+
+  #llamada-timbre p {
+    font-size: 2rem;
+  }
+
+  #llamada-timbre button {
+    font-size: 1.5rem;
+    padding: 12px 24px;
+  }
+}
