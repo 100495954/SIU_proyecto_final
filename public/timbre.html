@@ -1,14 +1,103 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <script src="/socket.io/socket.io.js"></script> <!-- Librería Socket.io --></head>
-    <h1>Modo Timbre</h1>
-    <button class="volver"></button>
-</html>
-<script>
-    const socket = io(); // Conexión al servidor Socket.io
-    document.querySelector('.volver').addEventListener('click', function() {
-        socket.emit('volver');
-        window.location.href = 'cuidador.html';
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Timbre - Cámara</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: black;
+      color: white;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    video {
+      width: 100%;
+      max-height: 80vh;
+      background: #000;
+    }
+  </style>
+</head>
+<body>
+  <h2>Dispositivo del Timbre</h2>
+  <video id="videoPreview" autoplay muted playsinline></video>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="module">
+    const socket = io();
+    const video = document.getElementById('videoPreview');
+    let stream;
+    let peerConnection;
+
+    async function iniciarCamara() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false
+        });
+
+        video.srcObject = stream;
+        console.log("✅ Cámara activada correctamente.");
+      } catch (err) {
+        console.error("❌ Error al acceder a la cámara:", err);
+        alert("No se pudo acceder a la cámara. Revisa los permisos.");
+      }
+    }
+
+    async function crearPeerConnection() {
+      peerConnection = new RTCPeerConnection();
+
+      stream.getTracks().forEach(track => {
+        peerConnection.addTrack(track, stream);
+      });
+
+      peerConnection.onicecandidate = (event) => {
+        if (event.candidate) {
+          socket.emit("ice-candidate", {
+            candidate: event.candidate
+          });
+        }
+      };
+
+      socket.on("answer", async ({ answer }) => {
+        console.log("📨 Respuesta recibida del visor.");
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+      });
+
+      socket.on("ice-candidate", async ({ candidate }) => {
+        if (candidate) {
+          try {
+            await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+          } catch (e) {
+            console.error("Error añadiendo ICE candidate:", e);
+          }
+        }
+      });
+
+      const offer = await peerConnection.createOffer();
+      await peerConnection.setLocalDescription(offer);
+
+      socket.emit("offer", {
+        offer
+      });
+
+      console.log("📡 Oferta enviada al visor.");
+    }
+
+    // Escuchar cuando alguien quiere conectarse
+    socket.on("viewer-ready", async () => {
+      console.log("👀 Visor conectado. Iniciando conexión WebRTC...");
+      await crearPeerConnection();
     });
-</script>
+
+    // Iniciar cámara automáticamente
+    iniciarCamara();
+  </script>
+</body>
+</html>
