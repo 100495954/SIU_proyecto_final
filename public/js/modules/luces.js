@@ -33,7 +33,8 @@ export async function iniciarDeteccionLuces() {
         if (brilloPromedio > brilloUmbral && !lucesEncendidas) {
           lucesEncendidas = true;
           mostrarAlerta('luces', 'Se han detectado luces encendidas en la habitación.');
-          document.getElementById('apagarLuces').style.display = 'inline-block';
+          const btn = document.getElementById('apagarLuces');
+          if (btn) btn.style.display = 'inline-block';
         } else if (brilloPromedio <= brilloUmbral && lucesEncendidas) {
           lucesEncendidas = false;
           // Eliminar alerta existente

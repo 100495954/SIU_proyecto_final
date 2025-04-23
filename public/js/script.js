@@ -7,11 +7,21 @@ inicializarMapa();
 inicializarPermisos();
 inicializarPersona();
 
-// Meter estas partes en vuestro código lo dejo aquí temporalmente
-const socket = io(); // Conexión a Socket.io
-document.querySelector('#llamar').addEventListener('click', () => {
-  socket.emit('Alerta', 'Llamada'); // Emitir evento de caída
-})
-document.querySelector('#timbre').addEventListener('click', () => {
-  socket.emit('Alerta', 'Timbre'); // Emitir evento de timbre
-})
+// Conexión a Socket.io
+const socket = io(); 
+document.getElementById('emergencias').addEventListener('click', () => {
+  alert('Alerta enviada a emergencias');
+});
+
+// Manejar redirecciones desde el servidor
+socket.on('Timbre', () => {
+  if (window.location.pathname !== '/timbre.html') {
+    window.location.href = 'timbre.html';
+  }
+});
+
+socket.on('RedirigirCaida', () => {
+  if (window.location.pathname !== '/caida.html') {
+    window.location.href = 'caida.html';
+  }
+});

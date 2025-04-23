@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Alertas de Caída</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <link rel="stylesheet" href="css/caida.css">
+</head>
+<body>
+  <h1>Alertas de Caída</h1>
+  
+  <!-- Alerta visible desde el inicio -->
+  <div id="alertas-container">
+    <div class="alerta alerta-caida">
+      <strong>¡ALERTA!</strong> Se ha detectado una caída.
+    </div>
+  </div>
+
+  <!-- Botón visible desde el inicio -->
+  <button id="ayudar" style="display: inline-block;">Ayudar a la persona</button>
+
+  <script src="/js/modules/caidas.js"></script>
+  <script>
+    const socket = io();
+    const alertasContainer = document.getElementById('alertas-container');
+    
+    // Escuchar alertas de caída
+    socket.on('Caida', (data) => {
+      alertasContainer.innerHTML = `
+        <div class="alerta alerta-caida">
+          <strong>¡ALERTA!</strong> ${data.mensaje} (${new Date(data.timestamp).toLocaleTimeString()})
+        </div>
+      `;
+      document.getElementById('ayudar').style.display = 'inline-block';
+    });
+    
+    // Escuchar resoluciones de caída
+    socket.on('CaidaResuelta', (data) => {
+      alertasContainer.innerHTML += `
+        <div class="alerta alerta-resuelta">
+          <strong>Resuelto:</strong> ${data.mensaje} (${new Date(data.timestamp).toLocaleTimeString()})
+        </div>
+      `;
+      document.getElementById('ayudar').style.display = 'none';
+    });
+    
+    // Configurar el botón de ayuda
+    document.getElementById('ayudar').addEventListener('click', () => {
+      socket.emit('CaidaResuelta', {
+        tipo: 'caida',
+        mensaje: 'La persona ha sido ayudada.',
+        timestamp: new Date().toISOString()
+      });
+      window.location.href = '/cuidador.html';
+    });
+  </script>
+</body>
+</html>

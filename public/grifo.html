@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Alertas de Grifo</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <link rel="stylesheet" href="css/grifo.css">
+</head>
+<body>
+  <h1>Monitor de Grifo</h1>
+  <div id="alertas-container"></div>
+  <button id="apagarGrifo">Apagar Grifo</button>
+
+  <script type="module" src="/js/modules/grifo.js"></script>
+  <script>
+    const socket = io();
+    const alertasContainer = document.getElementById('alertas-container');
+    
+    // Escuchar alertas de grifo
+    socket.on('Grifo', (data) => {
+      alertasContainer.innerHTML = `
+        <div id="alerta-activa" class="alerta alerta-grifo">
+          <strong>¡ALERTA!</strong> ${data.mensaje}
+          <div class="nivel-sonido">Nivel de sonido: ${data.nivelSonido.toFixed(2)}</div>
+          <small>${new Date(data.timestamp).toLocaleTimeString()}</small>
+        </div>
+      `;
+      document.getElementById('apagarGrifo').style.display = 'inline-block';
+    });
+    
+    // Escuchar grifo apagado
+    socket.on('GrifoApagado', (data) => {
+      const alertaActiva = document.getElementById('alerta-activa');
+      if (alertaActiva) {
+        // Aplicar animación de desvanecimiento
+        alertaActiva.style.opacity = '0';
+        alertaActiva.style.height = '0';
+        alertaActiva.style.padding = '0';
+        alertaActiva.style.margin = '0';
+        
+        // Eliminar completamente después de la animación
+        setTimeout(() => {
+          alertaActiva.remove();
+        }, 500);
+      }
+      
+      document.getElementById('apagarGrifo').style.display = 'none';
+    });
+    
+    // Configurar el botón de apagar
+    document.getElementById('apagarGrifo').addEventListener('click', () => {
+      socket.emit('GrifoApagado', {
+        tipo: 'grifo',
+        mensaje: 'El grifo ha sido apagado manualmente.',
+        timestamp: new Date().toISOString()
+      });
+    });
+  </script>
+</body>
+</html>

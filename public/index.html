@@ -2,31 +2,28 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Mapa Interactivo de Casa</title>
-  <link rel="stylesheet" href="styles.css">
-  <script src="/socket.io/socket.io.js"></script> <!-- Librería Socket.io -->
+  <title>Aplicación de Asistencia</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="/socket.io/socket.io.js"></script>
   <script type="module" src="js/script.js" defer></script>
 </head>
 <body>
   <h1>Mapa Interactivo de Casa</h1>
+  <div class="contenedor-botones">
+    <button id="boton-permiso">
+      <span>Solicitar permisos</span>
+    </button>
+    <button id="emergencias" >Llamar a emergencias</button>
+  </div>
   <div class="contenedor">
     <div id="mapa">
       <svg id="svgContainer"></svg>
     </div>
-    <div class="contenedor-permisos">
-      <button id="boton-permiso">
-        <span>Solicitar permisos</span>
-      </button>
-    </div>
     <div class="botones-apagado">
       <button id="apagarGrifo" style="display: none;">Apagar grifo</button>
       <button id="apagarLuces" style="display: none;">Apagar luces</button>
-      <button id="recoger" style="display: none;">Recoger</button>
-      Botones que se pueden borrar cuando se actulicen las llamadas al servidor 
-      <button id="llamar" >Llamar</button> 
-      <button id="timbre">Timbre</button>
     </div>
   </div>
-    <div id="controles"></div>
+  <div id="controles"></div>
 </body>
 </html>

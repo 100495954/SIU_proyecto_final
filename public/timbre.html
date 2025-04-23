@@ -1,14 +1,55 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <script src="/socket.io/socket.io.js"></script> <!-- Librería Socket.io --></head>
-    <h1>Modo Timbre</h1>
-    <button class="volver"></button>
-</html>
-<script>
-    const socket = io(); // Conexión al servidor Socket.io
-    document.querySelector('.volver').addEventListener('click', function() {
-        socket.emit('volver');
-        window.location.href = 'cuidador.html';
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Alerta de Timbre</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <link rel="stylesheet" href="css/timbre.css">
+</head>
+<body>
+  <h1>Pantalla del timbre</h1>
+
+  <div class="alerta-timbre">¡Se ha llamado al timbre!</div>
+
+  <!-- Botones visibles desde el inicio -->
+  <div class="botones-container" style="display: flex;">
+    <button class="btn btn-abrir">Abrir Puerta</button>
+    <button class="btn btn-colgar">Colgar</button>
+  </div>
+
+  <script>
+    const socket = io();
+
+    socket.on('Timbre', () => {
+      const alerta = document.querySelector('.alerta-timbre');
+      alerta.style.display = 'block';
     });
-</script>
+
+    // Botón Abrir Puerta
+    document.querySelector('.btn-abrir').addEventListener('click', function () {
+      socket.emit('AbrirPuerta');
+      resetearInterfaz();
+      alert('Puerta abierta');
+      window.location.href = 'index.html';
+    });
+
+    // Botón Colgar
+    document.querySelector('.btn-colgar').addEventListener('click', function () {
+      socket.emit('Colgar');
+      resetearInterfaz();
+      alert('Se ha colgado la llamada');
+      window.location.href = 'index.html';
+    });
+
+    // Función para ocultar alerta y botones
+    function resetearInterfaz() {
+      document.querySelector('.alerta-timbre').style.display = 'none';
+      document.querySelector('.botones-container').style.display = 'none';
+    }
+
+    // Eventos opcionales
+    socket.on('PuertaAbierta', () => resetearInterfaz());
+    socket.on('LlamadaFinalizada', () => resetearInterfaz());
+  </script>
+</body>
+</html>

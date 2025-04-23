@@ -399,19 +399,44 @@ export function inicializarMapa() {
     drawPolygon(adjustedPath, className);
   }
   
-  // Loop through each class and add event listener
+  // Recorremos la lista de cuartos
   cuartos.labels.forEach(className => {
     const elementos = document.querySelectorAll(`.${className}`);
-    elementos.forEach(el => {
-      el.addEventListener('click', () => {
-        socket.emit('Luces', className);
-        if (el.style.fill === 'rgb(223, 220, 95)') {
-        el.style.fill = 'rgb(190, 190, 190)';
-      } else {
-        el.style.fill = 'rgb(223, 220, 95)';}
+    elementos.forEach(room => {
+      room.addEventListener('click', () => {
+        const estaEncendida = room.style.fill === 'rgb(223, 220, 95)';
+  
+        if (!estaEncendida) {
+          // Verificar si ya hay otra luz encendida
+          const algunaLuzEncendida = cuartos.labels.some(label => {
+            const otroElemento = document.querySelector(`.${label}`);
+            return otroElemento && otroElemento.style.fill === 'rgb(223, 220, 95)';
+          });
+  
+          if (algunaLuzEncendida) {
+            return; // Ya hay una encendida, no hacemos nada
+          }
+  
+          room.style.fill = 'rgb(223, 220, 95)';
+          socket.emit('Luces', {
+            tipo: 'luces',
+            mensaje: '¡Se han encendido las luces!',
+            timestamp: new Date().toISOString(),
+          });
+  
+        } else {
+          // Si está encendida, se apaga
+          room.style.fill = 'rgb(190, 190, 190)';
+          socket.emit('LucesApagadas', {
+            tipo: 'luces',
+            mensaje: '¡Se han apagado las luces!',
+            timestamp: new Date().toISOString(),
+          });
+        }
       });
     });
   });
+  
 
   // Movemos la persona según las flechas del teclado
   document.addEventListener('keydown', (e) => {
@@ -438,12 +463,12 @@ export function inicializarMapa() {
     let cuarto = buscaCuarto(x, y, updatedRooms); // Llamamos a la función para buscar el cuarto
     if (cuarto) {
       let elemento = document.querySelector(`.${cuarto}`);
-      elemento.classList.add('seleccionado'); // Add the class to selected room
+      elemento.classList.add('seleccionado');
 
       cuartos['labels'].forEach(element => {
         if (element !== cuarto) {
           let otroElemento = document.querySelector(`.${element}`);
-          otroElemento.classList.remove('seleccionado'); // Remove the class from others
+          otroElemento.classList.remove('seleccionado');
         }
       });
     } else {

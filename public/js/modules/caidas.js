@@ -1,5 +1,6 @@
 import { mostrarAlerta, estadosAlertas } from './alertas.js';
 
+const socket = io();
 const aceleracionUmbral = 25;
 export function iniciarDeteccionCaida() {
   window.addEventListener('devicemotion', (event) => {
@@ -12,10 +13,23 @@ export function iniciarDeteccionCaida() {
       Math.pow(acceleration.z || 0, 2)
     );
 
-    if (aceleracionTotal > aceleracionUmbral) {
+    if (aceleracionTotal > aceleracionUmbral && !estadosAlertas.caida) {
+      estadosAlertas.caida = true;
       mostrarAlerta('caida', 'La persona ha sufrido una caída.');
       const btn = document.getElementById('recoger');
       if (btn) btn.style.display = 'inline-block';
+
+      // Enviar alerta al servidor
+      socket.emit('Caida', { 
+        tipo: 'caida', 
+        mensaje: 'La persona ha sufrido una caída.',
+        timestamp: new Date().toISOString()
+      });
+
+      // Redirigir a la página de caída
+      if (window.location.pathname !== '/caida.html') {
+        window.location.href = '/caida.html';
+      }
     }
   });
 }
@@ -34,7 +48,17 @@ export function configurarBotonRecoger() {
     mostrarAlerta('caida', 'La persona ha sido ayudada.');
     btn.style.display = 'none';
     
-    // Restablecer estado
+    // Restablecer estado y notificar al servidor
     estadosAlertas.caida = false;
+    socket.emit('CaidaResuelta', {
+      tipo: 'caida',
+      mensaje: 'La persona ha sido ayudada.',
+      timestamp: new Date().toISOString()
+    });
+
+    // Volver a la página principal si estamos en caida.html
+    if (window.location.pathname === '/caida.html') {
+      window.location.href = '/';
+    }
   });
 }

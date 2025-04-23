@@ -63,6 +63,13 @@ svg {
   fill: rgb(190, 190, 190);
 }
 
+.contenedor-botones {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
 
 .contenedor {
   display: flex;

@@ -1,5 +1,7 @@
 import { mostrarAlerta, estadosAlertas } from './alertas.js';
 
+const socket = io();
+
 export function iniciarDeteccionSonido() {
   navigator.mediaDevices.getUserMedia({ audio: true })
     .then(stream => {
@@ -18,10 +20,21 @@ export function iniciarDeteccionSonido() {
         const media = dataArray.slice(30, 100);
         const promedio = media.reduce((acc, val) => acc + val, 0) / media.length;
 
-        if (promedio > 110) {
+        if (promedio > 30) {
+          estadosAlertas.grifo = true;
           mostrarAlerta('grifo', '¡Se ha detectado un sonido similar a un grifo abierto!');
           const btn = document.getElementById('apagarGrifo');
           if (btn) btn.style.display = 'inline-block';
+
+          // Enviar alerta al servidor
+          if (socket && socket.emit) {
+            socket.emit('Grifo', {
+              tipo: 'grifo',
+              mensaje: '¡Se ha detectado un sonido similar a un grifo abierto!',
+              timestamp: new Date().toISOString(),
+              nivelSonido: promedio
+            });
+          }
         }
 
         requestAnimationFrame(detectarGrifo);
@@ -49,7 +62,14 @@ export function configurarBotonApagarGrifo() {
     mostrarAlerta('grifo', 'El grifo está apagado.');
     btn.style.display = 'none';
 
-    // Restablecer estado
+    // Restablecer estado y notificar al servidor
     estadosAlertas.grifo = false;
+    if (socket && socket.emit) {
+      socket.emit('GrifoApagado', {
+        tipo: 'grifo',
+        mensaje: 'El grifo ha sido apagado.',
+        timestamp: new Date().toISOString()
+      });
+    }
   });
 }

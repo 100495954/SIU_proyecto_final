@@ -1,0 +1,32 @@
+body {
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .alerta {
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 5px;
+    color: white;
+  }
+  
+  .alerta-caida {
+    background-color: #e74c3c;
+  }
+  
+  .alerta-resuelta {
+    background-color: #2ecc71;
+  }
+  
+  #ayudar {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+  }

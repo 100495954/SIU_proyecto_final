@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Alerta de Caída</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+      background-color: #ffe6e6;
+    }
+    .alerta {
+      background-color: #ff4444;
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 20px auto;
+      max-width: 500px;
+      font-size: 24px;
+    }
+    .btn-bien {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 15px 32px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 20px 2px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .btn-ayudar {
+      background-color: red;
+      color: white;
+      border: none;
+      padding: 15px 32px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 20px 2px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="alerta">¡SE HA DETECTADO UNA CAÍDA!</div>
+  <h2>¿Estás bien?</h2>
+  <button id="recoger" class="btn-bien">Sí</button>
+  <button id="ayuda" class="btn-ayudar">Necesito ayuda</button>
+
+  <script>
+    const socket = io();
+    
+    // Configurar botón de ayuda
+    document.getElementById('recoger').addEventListener('click', () => {
+      socket.emit('CaidaResuelta', {
+        tipo: 'caida',
+        mensaje: 'La persona ha sido ayudada.',
+        timestamp: new Date().toISOString()
+      });
+      window.location.href = '/';
+    });
+
+    // Configurar botón de ayuda
+    document.getElementById('ayuda').addEventListener('click', () => {
+      alert('Se ha enviado una alerta de ayuda a emergencias.');
+    });
+
+    // Escuchar si la caída ya fue resuelta desde otro dispositivo
+    socket.on('CaidaResuelta', () => {
+      window.location.href = '/';
+    });
+  </script>
+</body>
+</html>
