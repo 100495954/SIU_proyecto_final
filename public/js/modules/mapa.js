@@ -436,7 +436,18 @@ export function inicializarMapa() {
       });
     });
   });
-  
+
+  // Escuchar el evento 'LucesApagadas' del socket
+  socket.on('LucesApagadas', (data) => {
+    // Apagar todas las luces que estén encendidas
+    cuartos.labels.forEach(className => {
+      const elemento = document.querySelector(`.${className}`);
+      if (elemento && elemento.style.fill === 'rgb(223, 220, 95)') {
+        elemento.style.fill = 'rgb(190, 190, 190)';
+      }
+    });
+    console.log('Luces apagadas remotamente:', data.mensaje);
+  });
 
   // Movemos la persona según las flechas del teclado
   document.addEventListener('keydown', (e) => {
@@ -478,8 +489,6 @@ export function inicializarMapa() {
     circle.setAttribute("cx", x);
     circle.setAttribute("cy", y);
   });
-
-  
 
   // Llamamos a la función de inicialización
   CrearPersona(x,y, circle, svg);

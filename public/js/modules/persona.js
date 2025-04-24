@@ -1,63 +1,102 @@
-// Función para crear y gestionar la persona en el mapa
-export function inicializarPersona() {
-  // Inicializamos la posición de la persona
-  let x = 240; // posición horizontal
-  let y = 480; // posición vertical
-  const paso = 10; // Cuánto mueve cada tecla
+export class Persona {
+  constructor(x, y, paso, svg, cuartos, socket, cuartosPoligonos) {
+    this.x = x;
+    this.y = y;
+    this.paso = paso;
+    this.svg = svg;
+    this.cuartos = cuartos;
+    this.socket = socket;
+    this.cuartosPoligonos = cuartosPoligonos;
 
-  // Elementos del DOM
-  const mensaje = document.createElement('p'); // Elemento donde se mostrarán las alertas
-  document.getElementById('controles').appendChild(mensaje);
-  const svg = document.getElementById("svgContainer");
-  const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-
-  // Crear representación visual de la persona
-  function crearPersona(x, y, circle, svg) {
-    circle.setAttribute("cx", x);
-    circle.setAttribute("cy", y);
-    circle.setAttribute("r", 5);
-    circle.setAttribute("fill", "red");
-
-    svg.appendChild(circle);
-
-    return circle;
+    this.circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    this.crearPersona();
+    this.escucharMovimiento();
   }
 
-  // Configurar control de movimiento con teclado
-  function configurarMovimiento() {
+  crearPersona() {
+    this.circle.setAttribute("cx", this.x);
+    this.circle.setAttribute("cy", this.y);
+    this.circle.setAttribute("r", 7);
+    this.circle.setAttribute("fill", "red");
+    this.svg.appendChild(this.circle);
+  }
+
+  mover(dx, dy) {
+    this.x = Math.max(0, Math.min(this.x + dx, 480));
+    this.y = Math.max(0, Math.min(this.y + dy, 480));
+    this.circle.setAttribute("cx", this.x);
+    this.circle.setAttribute("cy", this.y);
+    this.actualizarCuarto();
+  }
+
+  actualizarCuarto() {
+    const cuarto = this.buscarCuarto(this.x, this.y, this.cuartosPoligonos);
+    if (cuarto) {
+      const elemento = document.querySelector(`.${cuarto}`);
+      elemento.classList.add('seleccionado');
+
+      this.cuartos.labels.forEach(label => {
+        if (label !== cuarto) {
+          const otro = document.querySelector(`.${label}`);
+          otro?.classList.remove('seleccionado');
+        }
+      });
+    } else {
+      console.log("Fuera de la casa");
+    }
+  }
+
+  buscarCuarto(x, y, poligonos) {
+    for (let i = 0; i < poligonos.length; i++) {
+      if (this.coordenadasCuartoInter([x, y], poligonos[i])) {
+        return this.cuartos.labels[i];
+      }
+    }
+    return null;
+  }
+
+  coordenadasCuartoInter([x, y], poligono) {
+    let dentro = false;
+    for (let i = 0, j = poligono.length - 1; i < poligono.length; j = i++) {
+      const [xi, yi] = poligono[i];
+      const [xj, yj] = poligono[j];
+
+      const intersect = ((yi > y) !== (yj > y)) &&
+                        (x < (xj - xi) * (y - yi) / (yj - yi + 0.00001) + xi);
+      if (intersect) dentro = !dentro;
+    }
+    return dentro;
+  }
+
+  escucharMovimiento() {
     document.addEventListener('keydown', (e) => {
+      let moved = false;
       switch (e.key) {
         case 'ArrowUp':
-          y = Math.max(0, y - paso);  // Límite superior
+          this.mover(0, -this.paso);
+          moved = true;
           break;
         case 'ArrowDown':
-          y = Math.min(480, y + paso); // Límite inferior
+          this.mover(0, this.paso);
+          moved = true;
           break;
         case 'ArrowLeft':
-          x = Math.max(0, x - paso);  // Límite izquierdo
+          this.mover(-this.paso, 0);
+          moved = true;
           break;
         case 'ArrowRight':
-          x = Math.min(480, x + paso); // Límite derecho
+          this.mover(this.paso, 0);
+          moved = true;
           break;
       }
-      circle.setAttribute("cx", x);
-      circle.setAttribute("cy", y);
+
+      if (moved) {
+        this.socket.emit('Mover', e.key);
+      }
     });
   }
 
-  // Iniciar la persona
-  crearPersona(x, y, circle, svg);
-  configurarMovimiento();
-
-  // Exportamos un objeto con métodos y propiedades que podrían ser útiles
-  return {
-    getPosition: () => ({ x, y }),
-    setPosition: (newX, newY) => {
-      x = newX;
-      y = newY;
-      circle.setAttribute("cx", x);
-      circle.setAttribute("cy", y);
-    },
-    elemento: circle
-  };
+  getEstado() {
+    return [this.x, this.y];
+  }
 }

@@ -2,18 +2,21 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pantalla del cuidador</title>
   <link rel="stylesheet" href="css/cuidador.css">
   <script src="/socket.io/socket.io.js"></script>
   <script src="js/cuidador.js" type="module" defer></script>
 </head>
 <body>
-  <h1>Pantalla del cuidador</h1>
   <div class="contenedor">
+    <h1>Pantalla del cuidador</h1>
+    <div class="contenedor-botones">
       <button id="emergencias">Llamar a emergencias</button> 
       <button id="timbre">Llamar al timbre</button>
-  </div>
-  <!-- Contenedor para las alertas -->
-  <div class="alertas-container" id="alertasContainer"></div>    
+    </div>
+    <!-- Contenedor para las alertas -->
+    <div class="alertas-container" id="alertasContainer"></div>
+  </div> 
 </body>
 </html>

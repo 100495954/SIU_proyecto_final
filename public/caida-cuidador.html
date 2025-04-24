@@ -2,22 +2,25 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Alertas de Caída</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pantalla de Caída</title>
   <script src="/socket.io/socket.io.js"></script>
   <link rel="stylesheet" href="css/caida.css">
 </head>
 <body>
-  <h1>Alertas de Caída</h1>
-  
-  <!-- Alerta visible desde el inicio -->
-  <div id="alertas-container">
-    <div class="alerta alerta-caida">
-      <strong>¡ALERTA!</strong> Se ha detectado una caída.
+  <div class="container">
+    <h1>Pantalla de Caída</h1>
+    
+    <div id="alertas-container">
+      <div class="alerta alerta-caida">
+        <strong>¡ALERTA!</strong> Se ha detectado una caída.
+      </div>
+    </div>
+
+    <div class="accion-container">
+      <button id="ayudar">Ayudar a la persona</button>
     </div>
   </div>
-
-  <!-- Botón visible desde el inicio -->
-  <button id="ayudar" style="display: inline-block;">Ayudar a la persona</button>
 
   <script src="/js/modules/caidas.js"></script>
   <script>
@@ -40,7 +43,11 @@
         <div class="alerta alerta-resuelta">
           <strong>Resuelto:</strong> ${data.mensaje} (${new Date(data.timestamp).toLocaleTimeString()})
         </div>
+        <button id="volver">Volver a la pantalla principal</button>
       `;
+      document.getElementById('volver').addEventListener('click', () => {
+        window.location.href = '/cuidador.html';
+      });
       document.getElementById('ayudar').style.display = 'none';
     });
     

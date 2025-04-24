@@ -21,18 +21,36 @@ export function iniciarDeteccionSonido() {
         const promedio = media.reduce((acc, val) => acc + val, 0) / media.length;
 
         if (promedio > 30) {
-          estadosAlertas.grifo = true;
-          mostrarAlerta('grifo', '¡Se ha detectado un sonido similar a un grifo abierto!');
-          const btn = document.getElementById('apagarGrifo');
-          if (btn) btn.style.display = 'inline-block';
+          if (!estadosAlertas.grifo) {
+            estadosAlertas.grifo = true;
+            mostrarAlerta('grifo', '¡Se ha detectado un sonido similar a un grifo abierto!');
+            const btn = document.getElementById('apagarGrifo');
+            if (btn) btn.style.display = 'inline-block';
 
-          // Enviar alerta al servidor
-          if (socket && socket.emit) {
+            // Enviar alerta al servidor
             socket.emit('Grifo', {
               tipo: 'grifo',
               mensaje: '¡Se ha detectado un sonido similar a un grifo abierto!',
               timestamp: new Date().toISOString(),
               nivelSonido: promedio
+            });
+          }
+        } else {
+          if (estadosAlertas.grifo) {
+            // Eliminar alerta de sonido del grifo
+            const alertaGrifo = document.getElementById('alerta-grifo');
+            if (alertaGrifo) alertaGrifo.remove();
+
+            // Ocultar botón
+            const btn = document.getElementById('apagarGrifo');
+            if (btn) btn.style.display = 'none';
+
+            // Restablecer estado y notificar al servidor
+            estadosAlertas.grifo = false;
+            socket.emit('GrifoApagado', {
+              tipo: 'grifo',
+              mensaje: 'El sonido del grifo ha cesado.',
+              timestamp: new Date().toISOString()
             });
           }
         }
@@ -64,12 +82,10 @@ export function configurarBotonApagarGrifo() {
 
     // Restablecer estado y notificar al servidor
     estadosAlertas.grifo = false;
-    if (socket && socket.emit) {
-      socket.emit('GrifoApagado', {
-        tipo: 'grifo',
-        mensaje: 'El grifo ha sido apagado.',
-        timestamp: new Date().toISOString()
-      });
-    }
+    socket.emit('GrifoApagado', {
+      tipo: 'grifo',
+      mensaje: 'El grifo ha sido apagado manualmente.',
+      timestamp: new Date().toISOString()
+    });
   });
 }
