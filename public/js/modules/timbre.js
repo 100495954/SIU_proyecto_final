@@ -20,7 +20,7 @@ export async function timbre() {
             let sum = dataArray.reduce((a, b) => a + b, 0);
             const average = sum / bufferLength;
 
-            if (average > 100) {
+            if (average > 70) {
                 const llamada = document.getElementById("llamada-timbre");
                 if (llamada) {
                     llamada.style.display = 'flex';
@@ -42,28 +42,103 @@ export async function timbre() {
     }
 }
 
-export function configurarBotonRechazar(){
-    const btn = document.getElementById('rechazar');
-    if (!btn) return;
-    btn.addEventListener('click',()=>{
-      document.getElementById('llamada-timbre').style.display = 'none';
-    })
+function configurarSlider(idSlider, accionIzquierda, accionDerecha) {
+  const slider = document.getElementById(idSlider);
+  const thumb = slider.querySelector(".slider-thumb");
+
+  let startX = 0;
+  let currentX = 0;
+  let dragging = false;
+
+  const maxVisualMove = 50; // 🔧 Máximo desplazamiento visual en píxeles
+
+  const mover = (clientX) => {
+    if (!dragging) return;
+    const deltaX = clientX - startX;
+    currentX = deltaX;
+
+    // 🔒 Limitar el movimiento visual del thumb
+    const limitedX = Math.max(-maxVisualMove, Math.min(deltaX, maxVisualMove));
+    thumb.style.transform = `translateX(${limitedX}px)`;
+  };
+
+  const terminar = () => {
+    dragging = false;
+    if (currentX < -slider.offsetWidth / 4) {
+      accionIzquierda();
+    } else if (currentX > slider.offsetWidth / 4) {
+      accionDerecha();
+    }
+    thumb.style.transform = "translateX(0)"; // Reset visual
+  };
+
+  const inicio = (clientX) => {
+    dragging = true;
+    startX = clientX;
+    currentX = 0;
+  };
+
+  // Eventos mouse
+  thumb.addEventListener("mousedown", e => {
+    inicio(e.clientX);
+    thumb.style.cursor = "grabbing";
+  });
+  window.addEventListener("mousemove", e => mover(e.clientX));
+  window.addEventListener("mouseup", () => {
+    terminar();
+    thumb.style.cursor = "grab";
+  });
+
+  // Eventos touch
+  thumb.addEventListener("touchstart", e => inicio(e.touches[0].clientX));
+  window.addEventListener("touchmove", e => mover(e.touches[0].clientX));
+  window.addEventListener("touchend", terminar);
+
+  // Cursor por defecto
+  thumb.style.cursor = "grab";
 }
 
-// NUEVO: Lógica de aceptar llamada y recibir el stream
+
+
+export function configurarSliderTimbre() {
+  configurarSlider("slider-timbre",
+    () => { // Izquierda → Rechazar
+      document.getElementById("llamada-timbre").style.display = "none";
+    },
+    () => { 
+      iniciarConexionVideo();
+    }
+  );
+}
+
+export function configurarSliderColgar() {
+  configurarSlider("slider-colgar",
+    () => {
+      colgarLlamada();
+    },
+    () => {
+      colgarLlamada();
+    }
+  );
+}
+
+function colgarLlamada() {
+  if (remoteVideo) {
+    remoteVideo.pause();
+    remoteVideo.srcObject = null;
+    remoteVideo.remove();
+  }
+  if (pc) {
+    pc.close();
+    pc = null;
+  }
+  document.getElementById("videollamada").style.display = "none";
+  socket.emit("colgar");
+}
+
+
 let pc;
 let remoteVideo;
-
-export function configurarBotonAceptar() {
-  const aceptarBtn = document.getElementById("acp");
-  if (!aceptarBtn) return;
-
-  aceptarBtn.addEventListener("click", () => {
-    document.getElementById("llamada-timbre").style.display = "none";
-    iniciarConexionVideo();
-  });
-}
-
 function iniciarConexionVideo() {
   pc = new RTCPeerConnection();
 
