@@ -4,93 +4,75 @@ let remoteVideo;
 
 export async function timbre() {
     try {
-        // Acceso al micrófono
-        const streamAudio = await navigator.mediaDevices.getUserMedia({ 
-            audio: true,
-            video: false
-        });
-
-        // Analizador de audio para detectar el timbre
+        const streamAudio = await navigator.mediaDevices.getUserMedia({ audio: true });
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         const source = audioContext.createMediaStreamSource(streamAudio);
         const analyser = audioContext.createAnalyser();
         analyser.fftSize = 256;
-        const bufferLength = analyser.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
         source.connect(analyser);
 
-        // Función para detectar el timbre
         function detectarTimbre() {
             analyser.getByteFrequencyData(dataArray);
-            let sum = dataArray.reduce((a, b) => a + b, 0);
-            const average = sum / bufferLength;
+            const average = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
 
-            if (average > 70) {
-                // Si se detecta un timbre, mostrar la interfaz
+            if (average > 75) {
                 const llamada = document.getElementById("llamada-timbre");
-                if (llamada) {
+                if (llamada && llamada.style.display === "none") {
                     llamada.style.display = 'flex';
                     socket.emit('Alerta', 'Timbre');
                     activarControlPorGiro("timbre");
                 }
             }
-
             requestAnimationFrame(detectarTimbre);
         }
 
         detectarTimbre();
-
     } catch (err) {
         console.error('Error en detección de timbre:', err);
-        if (err.name === 'NotAllowedError') {
-            alert('Por favor permite el acceso al micrófono.');
-        } else {
-            alert('Error técnico: ' + err.message);
-        }
+        alert('Error accediendo al micrófono: ' + err.message);
     }
 }
 
-// Función que se activa con el giroscopio
 function activarControlPorGiro(contexto) {
-    window.addEventListener('deviceorientation', (e) => {
+    const handler = (e) => {
+        const umbral = 60;
         if (!e.gamma) return;
 
-        const umbral = 20; // Umbral de giro
         if (contexto === "timbre") {
             if (e.gamma > umbral) {
-                // Aceptar llamada al timbre
                 document.getElementById("llamada-timbre").style.display = "none";
                 iniciarConexionVideo();
+                window.removeEventListener("deviceorientation", handler);
             } else if (e.gamma < -umbral) {
-                // Rechazar llamada al timbre
                 document.getElementById("llamada-timbre").style.display = "none";
+                window.removeEventListener("deviceorientation", handler);
             }
         } else if (contexto === "videollamada") {
             if (e.gamma > umbral || e.gamma < -umbral) {
-                // Colgar llamada
                 colgarLlamada();
+                window.removeEventListener("deviceorientation", handler);
             }
         }
-    });
+    };
+
+    window.addEventListener("deviceorientation", handler);
 }
 
-// Función para iniciar la conexión de video
 function iniciarConexionVideo() {
     pc = new RTCPeerConnection();
 
+    const videoContainer = document.getElementById("videollamada");
+    videoContainer.style.display = "block";
+    videoContainer.innerHTML = ""; // Limpiar por si acaso
+
     remoteVideo = document.createElement("video");
-    remoteVideo.id = "video";
     remoteVideo.autoplay = true;
     remoteVideo.playsInline = true;
-    remoteVideo.style.position = "fixed";
-    remoteVideo.style.top = "0";
-    remoteVideo.style.left = "0";
     remoteVideo.style.width = "100vw";
     remoteVideo.style.height = "100vh";
     remoteVideo.style.objectFit = "cover";
-    remoteVideo.style.zIndex = "9999";
-    remoteVideo.style.backgroundColor = "black";
-    document.body.appendChild(remoteVideo);
+    videoContainer.appendChild(remoteVideo);
 
     pc.ontrack = (event) => {
         remoteVideo.srcObject = event.streams[0];
@@ -109,7 +91,6 @@ function iniciarConexionVideo() {
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
         socket.emit("answer", { answer });
-        document.getElementById("videollamada").style.display = "block";
         activarControlPorGiro("videollamada");
     });
 
@@ -122,42 +103,32 @@ function iniciarConexionVideo() {
             }
         }
     });
+
+    socket.on("colgar", colgarLlamada);
 }
 
-// Función para colgar la videollamada
 function colgarLlamada() {
-  const videoContainer = document.getElementById("videollamada");
+    const videoContainer = document.getElementById("videollamada");
 
-  if (remoteVideo) {
-      // Detener todas las pistas del stream si existe
-      const stream = remoteVideo.srcObject;
-      if (stream) {
-          stream.getTracks().forEach(track => track.stop());
-      }
+    if (remoteVideo?.srcObject) {
+        remoteVideo.srcObject.getTracks().forEach(track => track.stop());
+    }
 
-      remoteVideo.pause();
-      remoteVideo.srcObject = null;
+    if (remoteVideo?.parentNode) {
+        remoteVideo.parentNode.removeChild(remoteVideo);
+    }
 
-      // Eliminar del DOM si fue añadido dinámicamente
-      if (remoteVideo.parentNode) {
-          remoteVideo.parentNode.removeChild(remoteVideo);
-      }
+    remoteVideo = null;
 
-      remoteVideo = null;
-  }
+    if (pc) {
+        pc.close();
+        pc = null;
+    }
 
-  if (pc) {
-      pc.close();
-      pc = null;
-  }
+    videoContainer.style.display = "none";
+    videoContainer.innerHTML = "";
 
-  // Ocultar el contenedor de video
-  if (videoContainer) {
-      videoContainer.style.display = "none";
-      videoContainer.innerHTML = ""; // Limpiar contenido por si acaso
-  }
-
-  socket.emit("colgar");
+    socket.emit("colgar");
 }
 
 
