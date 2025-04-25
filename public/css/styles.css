@@ -19,8 +19,8 @@ svg {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 422px;
+  height: 422px;
 }
 
 .outerRoom {
@@ -205,4 +205,13 @@ p {
     margin-top: 20rem;
     font-size: 6.5rem;
   }
+}
+
+#mapa {
+  position: relative;
+  width: 446px;
+  height: 446px;
+  border: 2px solid #ccc;
+  background-size: cover;
+  background-position: center;
 }

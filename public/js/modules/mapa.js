@@ -1554,7 +1554,7 @@ export function inicializarMapa() {
   let { minX, minY, maxX, maxY } = conseguirminmaxcasa(roomPath);
   let scale = obtenerfatorescalado(roomPath) - 1;
 
-  roomPath = adjustCoordinates(roomPath,-(minX-5),-(minY-5), scale); // HAcemos que la casa esté centrada en el SVG
+  roomPath = adjustCoordinates(roomPath,-(minX-5),-(minY-10), scale); // HAcemos que la casa esté centrada en el SVG
   
   drawPolygon(roomPath, 'outerRoom');
   // Adjust and draw the inner room
@@ -1566,7 +1566,7 @@ export function inicializarMapa() {
     } else {
       room = list[i];
     }
-    const adjustedPath = adjustCoordinates(room,-(minX-5),-(minY-5), scale);
+    const adjustedPath = adjustCoordinates(room,-(minX-5),-(minY-10), scale);
     updatedRooms.push(adjustedPath);
     const className = cuartos['labels'][i];
     drawPolygon(adjustedPath, className);
