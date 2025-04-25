@@ -12,11 +12,7 @@ document.getElementById('emergencias').addEventListener('click', function() {
 });
 
 // Si se detecta una caida de la persona, redirigir a la página de caida para manejar la situación
-socket.on('CaidaDetectada', (data) => { // <-- Cambiado de 'Caida'
-  console.log('Caída detectada recibida, redirigiendo a caida-cuidador.html', data);
-  // Opcional: podrías pasar algún ID o dato en la URL si es necesario
-  window.location.href = '/caida-cuidador.html';
-});
+socket.on('Caida', () => window.location.href = '/caida-cuidador.html');
 
 
 // Manejar alerta de grifo abierto

@@ -62,11 +62,11 @@
             if (intervaloCountdown) clearInterval(intervaloCountdown);
             countdownDiv.style.display = 'none';
 
-            // 2. Desactivar listener de orientación (inspirado en timbre.js)
+            // 2. Desactivar listener de orientación 
             desactivarListenerOrientacion();
 
             // 3. Enviar evento al servidor
-            const evento = respuesta === 'SI' ? 'CaidaConfirmadaOk' : 'CaidaConfirmadaAyuda';
+            const evento = respuesta === 'SI' ? 'CaidaResuelta' : 'PedirAyuda';
             socket.emit(evento, {
                 tipo: 'respuestaCaidaGiro', // Indicamos que es por giro
                 respuesta: respuesta,
@@ -311,8 +311,8 @@
             console.log("Página caida.html cargada. Iniciando verificación con giroscopio.");
 
             // Enviar notificación inmediata al cuidador
-            socket.emit('CaidaDetectada', {
-                tipo: 'caidaDetectada',
+            socket.emit('Caida', {
+                tipo: 'caida',
                 mensaje: 'Se ha detectado una posible caída. Verificando estado de la persona.',
                 timestamp: new Date().toISOString()
             });

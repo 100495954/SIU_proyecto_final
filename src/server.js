@@ -36,6 +36,11 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('CaidaResuelta', data);
   });
 
+  socket.on('PedirAyuda', (data) => {
+    console.log('La persona ha solicitado ayuda.', data);
+    socket.broadcast.emit('PedirAyuda', data);
+  });
+
   // Manejar alerta de grifo abierto
   socket.on('Grifo', (data) => {
     console.log('Alerta de grifo abierto:', data);

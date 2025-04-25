@@ -3,309 +3,73 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Alerta de Caída - Cuidador</title>
+  <title>Pantalla de Caída</title>
   <script src="/socket.io/socket.io.js"></script>
   <link rel="stylesheet" href="css/caida.css">
-  <style>
-    /* Añadir estilos para el contenedor de vídeo */
-    #video-container {
-      margin-top: 20px;
-      background-color: #000;
-      position: relative; /* Para posicionar el botón de colgar si se quiere encima */
-    }
-    #remoteVideo {
-      width: 100%;
-      max-height: 40vh; /* Ajustar altura */
-      display: block;
-    }
-    /* Estilos adicionales si son necesarios */
-    .accion-container button { margin: 5px; }
-  </style>
 </head>
 <body>
   <div class="container">
-    <h1>Alerta de Caída</h1>
-
+    <h1>Pantalla de Caída</h1>
+    
     <div id="alertas-container">
-      <div class="alerta alerta-caida" id="alerta-caida-inicial">
-         <strong>¡ALERTA!</strong> Se ha detectado una posible caída. Esperando detalles...
-       </div>
-    </div>
-
-    <div id="video-container" style="display: none;">
-      <video id="remoteVideo" autoplay playsinline></video>
+      <div class="alerta alerta-caida">
+        <strong>¡ALERTA!</strong> Se ha detectado una caída.
+      </div>
     </div>
 
     <div class="accion-container">
-       <button id="ver-camara" style="display: none;">Ver Cámara</button>
-      <button id="colgar-video">Colgar Video</button>
       <button id="ayudar">Ayudar a la persona</button>
-      <button id="volver-principal" style="display: none;">Volver</button>
     </div>
   </div>
 
+  <script src="/js/modules/caidas.js"></script>
   <script>
     const socket = io();
     const alertasContainer = document.getElementById('alertas-container');
-    const verCamaraBtn = document.getElementById('ver-camara');
-    const colgarVideoBtn = document.getElementById('colgar-video');
-    const ayudarBtn = document.getElementById('ayudar');
-    const volverBtn = document.getElementById('volver-principal');
-    const videoContainer = document.getElementById('video-container');
-    const remoteVideoElement = document.getElementById('remoteVideo');
-    const alertaInicial = document.getElementById('alerta-caida-inicial');
-
-    let pc; // RTCPeerConnection
-    let remoteStream;
-    let conexionAutomatica = true; // Para control de conexión automática
-
-    // --- Lógica WebRTC (Adaptada de timbre.js) ---
-
-    function crearPeerConnection() {
-        if (pc) {
-            console.warn("Ya existe una conexión PeerConnection.");
-            return;
-        }
-        try {
-            pc = new RTCPeerConnection(); // Puedes añadir configuración STUN/TURN aquí si es necesario
-
-            pc.onicecandidate = (event) => {
-                if (event.candidate) {
-                    console.log("Enviando candidato ICE desde cuidador");
-                    socket.emit("ice-candidate-caida", { candidate: event.candidate });
-                }
-            };
-
-            pc.ontrack = (event) => {
-                console.log("Track de vídeo recibido del dispositivo caído");
-                if (event.streams && event.streams[0]) {
-                    remoteVideoElement.srcObject = event.streams[0];
-                    remoteStream = event.streams[0];
-                    videoContainer.style.display = 'block'; // Mostrar contenedor de vídeo
-                    colgarVideoBtn.style.display = 'inline-block'; // Mostrar botón de colgar
-                    verCamaraBtn.style.display = 'none'; // Ocultar botón de ver cámara
-                } else {
-                     // Fallback por si no viene en streams[0]
-                    let inboundStream = new MediaStream(event.track);
-                    remoteVideoElement.srcObject = inboundStream;
-                    remoteStream = inboundStream;
-                     videoContainer.style.display = 'block';
-                     colgarVideoBtn.style.display = 'inline-block';
-                     verCamaraBtn.style.display = 'none';
-                }
-            };
-
-             pc.oniceconnectionstatechange = () => {
-                if(pc) {
-                    console.log(`Estado conexión ICE (cuidador): ${pc.iceConnectionState}`);
-                    if (pc.iceConnectionState === 'disconnected' || pc.iceConnectionState === 'closed' || pc.iceConnectionState === 'failed') {
-                        colgarLlamadaCaida(false); // Limpiar si la conexión se cae
-                    }
-                }
-            };
-
-
-            console.log("PeerConnection (cuidador) creado.");
-        } catch (error) {
-            console.error("Error creando PeerConnection (cuidador):", error);
-            alert("Error al iniciar la conexión de vídeo.");
-            limpiarWebRTC();
-        }
-    }
-
-    async function iniciarConexionVideoCaida() {
-        if (!pc) {
-             crearPeerConnection();
-        }
-        if (!pc) return; // Salir si la creación falló
-
-        console.log("Solicitando vídeo al dispositivo caído...");
-        // Avisar al dispositivo caído que queremos iniciar el vídeo
-        socket.emit('SolicitarVideoCaida'); // Necesitamos saber a quién pedírselo (implícito aquí, el servidor debe saber)
-
-        // Ahora esperamos la oferta del dispositivo caído
-    }
-
-    function colgarLlamadaCaida(notificarAlOtro = true) {
-        console.log("Colgando llamada (cuidador)...");
-        if (remoteStream) {
-            remoteStream.getTracks().forEach(track => track.stop());
-            remoteStream = null;
-        }
-         if (remoteVideoElement) {
-            remoteVideoElement.srcObject = null;
-         }
-        if (pc) {
-            pc.close();
-            pc = null;
-        }
-        videoContainer.style.display = 'none';
-        colgarVideoBtn.style.display = 'none';
-        verCamaraBtn.style.display = 'inline-block'; // Mostrar de nuevo el botón inicial
-
-        if (notificarAlOtro) {
-            console.log("Notificando al dispositivo caído para detener vídeo.");
-            socket.emit('DetenerVideoCaida'); // Avisar al otro lado para que libere la cámara
-        }
-    }
-
-    function limpiarWebRTC() {
-        if (remoteStream) {
-            remoteStream.getTracks().forEach(track => track.stop());
-        }
-         if (remoteVideoElement) {
-            remoteVideoElement.srcObject = null;
-         }
-        if (pc) {
-            pc.close();
-        }
-        pc = null;
-        remoteStream = null;
-        videoContainer.style.display = 'none';
-        colgarVideoBtn.style.display = 'none';
-        verCamaraBtn.style.display = 'inline-block';
-    }
-
-
-    // --- Listeners de Socket.IO ---
-
-    // 1. Alerta inicial de caída detectada
-    socket.on('CaidaDetectada', (data) => {
-      console.log("Evento CaidaDetectada recibido en caida-cuidador:", data);
-       if (alertaInicial) alertaInicial.remove(); // Quitar mensaje inicial si existe
+    
+    // Escuchar alertas de caída
+    socket.on('Caida', (data) => {
       alertasContainer.innerHTML = `
         <div class="alerta alerta-caida">
-          <strong>¡ALERTA!</strong> ${data.mensaje || 'Se ha detectado una posible caída.'} (${new Date(data.timestamp).toLocaleTimeString()})
+          <strong>¡ALERTA!</strong> ${data.mensaje} (${new Date(data.timestamp).toLocaleTimeString()})
         </div>
       `;
-      
-      // Si la conexión automática está activada, iniciar la conexión de video
-      if (conexionAutomatica) {
-        console.log("Iniciando conexión de video automáticamente...");
-        // Esperar un momento para dar tiempo a que la persona caída inicie su cámara
-        setTimeout(() => {
-          iniciarConexionVideoCaida();
-        }, 1000);
-      } else {
-        verCamaraBtn.style.display = 'inline-block'; // Mostrar botón solo si no es automático
-      }
-      
-      ayudarBtn.style.display = 'inline-block';
+      document.getElementById('ayudar').style.display = 'inline-block';
     });
-
-    // 2. Recibir la oferta del dispositivo caído
-    socket.on('offer-caida', async ({ offer }) => {
-        console.log("Oferta recibida del dispositivo caído.");
-        if (!pc) {
-            crearPeerConnection(); // Crear PC si no existe aún
-        }
-         if (!pc || pc.signalingState !== 'stable') {
-             console.warn(`Recibida oferta en estado inválido (${pc?.signalingState}), reiniciando PC.`);
-             limpiarWebRTC(); // Limpiar estado previo inconsistente
-             crearPeerConnection();
-             // Podríamos necesitar solicitar de nuevo el vídeo si esto pasa frecuentemente.
-             // Por ahora, asumimos que la oferta llega en estado 'stable' o después de crear PC.
-             if(!pc) return; // Salir si la creación falló de nuevo
-         }
-
-
-        try {
-            await pc.setRemoteDescription(new RTCSessionDescription(offer));
-            console.log("RemoteDescription (oferta) establecida.");
-            const answer = await pc.createAnswer();
-            console.log("Respuesta creada.");
-            await pc.setLocalDescription(answer);
-            console.log("LocalDescription (respuesta) establecida.");
-            socket.emit('answer-caida', { answer });
-            console.log("Respuesta enviada al dispositivo caído.");
-        } catch (error) {
-            console.error("Error procesando la oferta o creando la respuesta:", error);
-            limpiarWebRTC();
-        }
-    });
-
-    // 3. Recibir candidatos ICE del dispositivo caído
-    socket.on('ice-candidate-caida', async ({ candidate }) => {
-        if (candidate && pc && pc.signalingState !== 'closed') {
-             console.log("Recibido candidato ICE del dispositivo caído.");
-            try {
-                await pc.addIceCandidate(new RTCIceCandidate(candidate));
-            } catch (e) {
-                console.error("Error añadiendo candidato ICE recibido:", e);
-            }
-        }
-    });
-
-     // 4. Escuchar si el otro lado colgó o detuvo el stream
-     socket.on('DetenerVideoCaida', () => {
-        console.log("Recibida señal para detener vídeo desde el otro lado.");
-        colgarLlamadaCaida(false); // Colgar localmente sin notificar de vuelta
-     });
-
-
-    // 5. Escuchar resoluciones de caída (información adicional)
+    
+    // Escuchar resoluciones de caída
     socket.on('CaidaResuelta', (data) => {
-      colgarLlamadaCaida(false); // Colgar video si se resuelve
       alertasContainer.innerHTML += `
         <div class="alerta alerta-resuelta">
           <strong>Resuelto:</strong> ${data.mensaje} (${new Date(data.timestamp).toLocaleTimeString()})
         </div>
+        <button id="volver">Volver a la pantalla principal</button>
       `;
-      ayudarBtn.style.display = 'none';
-      verCamaraBtn.style.display = 'none';
-      colgarVideoBtn.style.display = 'none';
-      volverBtn.style.display = 'inline-block';
+      document.getElementById('volver').addEventListener('click', () => {
+        window.location.href = '/cuidador.html';
+      });
+      document.getElementById('ayudar').style.display = 'none';
+    });
+    
+    socket.on('PedirAyuda', (data) => {
+      alertasContainer.innerHTML += `
+        <div class="alerta alerta-resuelta">
+          <strong>Resuelto:</strong> ${'La persona ha solicitado ayuda.'} (${new Date(data.timestamp).toLocaleTimeString()})
+        </div>
+        <button id="volver">Volver a la pantalla principal</button>
+      `;
+      document.getElementById('ayudar').style.display = 'none';
     });
 
-    // OPCIONAL: Escuchar respuestas del usuario caído para info extra
-     socket.on('CaidaConfirmadaOk', (data) => {
-        alertasContainer.innerHTML += `<div class="alerta alerta-info"><strong>Info:</strong> Usuario indicó que está OK. (${new Date(data.timestamp).toLocaleTimeString()})</div>`;
-        // Podrías colgar automáticamente aquí si quieres: colgarLlamadaCaida(true);
-     });
-     socket.on('CaidaConfirmadaAyuda', (data) => {
-        alertasContainer.innerHTML += `<div class="alerta alerta-ayuda"><strong>Info:</strong> Usuario indicó que necesita AYUDA. (${new Date(data.timestamp).toLocaleTimeString()})</div>`;
-     });
-      socket.on('EmergenciaRequerida', (data) => {
-        alertasContainer.innerHTML += `<div class="alerta alerta-emergencia"><strong>¡EMERGENCIA!</strong> Llamada automática por falta de respuesta. (${new Date(data.timestamp).toLocaleTimeString()})</div>`;
-     });
-
-
-    // --- Configuración de Botones ---
-
-    // Botón para iniciar la visualización (manual, si se necesita)
-    verCamaraBtn.addEventListener('click', iniciarConexionVideoCaida);
-    // Botón para colgar el vídeo manualmente
-    colgarVideoBtn.addEventListener('click', () => colgarLlamadaCaida(true)); // Notificar al otro lado
-
-    // Botón de "Ayudar" (resuelve la alerta)
-    ayudarBtn.addEventListener('click', () => {
-      colgarLlamadaCaida(true); // Asegurarse de colgar el vídeo si está activo
+    // Configurar el botón de ayuda
+    document.getElementById('ayudar').addEventListener('click', () => {
       socket.emit('CaidaResuelta', {
         tipo: 'caida',
-        mensaje: 'El cuidador ha confirmado la ayuda.', // Mensaje más específico
+        mensaje: 'La persona ha sido ayudada.',
         timestamp: new Date().toISOString()
       });
-      // La UI se actualizará con el listener de 'CaidaResuelta'
+      window.location.href = '/cuidador.html';
     });
-
-    // Botón para volver al dashboard principal
-     volverBtn.addEventListener('click', () => {
-       window.location.href = '/cuidador.html'; // O la página principal del cuidador
-     });
-
-     // Limpieza al descargar la página (por si acaso)
-      window.addEventListener('beforeunload', () => {
-        colgarLlamadaCaida(true); // Intenta colgar y notificar
-        socket.disconnect(); // Desconectar socket
-     });
-
-     // Inicialización automática al cargar la página
-     document.addEventListener('DOMContentLoaded', () => {
-       console.log("Página de cuidador cargada. Esperando alertas de caída...");
-       
-       // Comprobar si hay notificaciones o alertas pendientes al cargar la página
-       socket.emit('CheckPendingAlerts');
-     });
   </script>
 </body>
 </html>

@@ -7,10 +7,6 @@ const aceleracionUmbral = 25; // Ajusta según necesidad
 const LIMITE_TIEMPO_ENTRE_CAIDAS = 10000; // 10 seg, evita detecciones múltiples
 let ultimaCaidaTimestamp = 0;
 
-// Asegúrate que estadosAlertas esté definido e inicializado
-// Ejemplo: import { estadosAlertas } from './alertas.js';
-// O si no usas módulos: var estadosAlertas = { caida: false };
-
 export function iniciarDeteccionCaida() {
     if (!window.DeviceMotionEvent) {
         console.error("DeviceMotionEvent no soportado.");
@@ -18,7 +14,6 @@ export function iniciarDeteccionCaida() {
         return;
     }
 
-    // Solicitar permisos primero si es necesario (iOS 13+)
     if (typeof DeviceMotionEvent.requestPermission === 'function') {
         DeviceMotionEvent.requestPermission()
             .then(permissionState => {
@@ -67,7 +62,7 @@ function agregarListenerMovimiento() {
                 estadosAlertas.caida = true; // Marcar estado como caída activa
 
                 // Notificar al servidor INMEDIATAMENTE (opcional pero recomendado)
-                socket.emit('CaidaDetectada', { // Evento renombrado
+                socket.emit('Caida', { // Evento renombrado
                     mensaje: 'Posible caída detectada por el sensor de movimiento.',
                     timestamp: new Date().toISOString()
                 });
