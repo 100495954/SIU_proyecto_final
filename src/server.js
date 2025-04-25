@@ -55,14 +55,14 @@ io.on('connection', (socket) => {
   });
 
   // Los mensajes para manejar las luces de la casa
-  socket.on('Luces', (data) => {
+  socket.on('Encender_luces', (data) => {
     console.log('Luces de ',data, ' cambiadas');
-    socket.broadcast.emit('Luces', data);
+    socket.broadcast.emit('Encender_luces', data);
   });
 
-  socket.on('LucesApagadas', () => {
-    console.log('Luces apagadas manualmente');
-    socket.broadcast.emit('LucesApagadas');
+  socket.on('Apagar_luces', (data) => {
+    console.log('Luces de ',data, 'apagadas');
+    socket.broadcast.emit('Apagar_luces', data);
   });
 
   // Los mensajes para manejar las alertas de la casa

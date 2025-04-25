@@ -1,4 +1,11 @@
+import { inicializarMapa } from "./modules/mapa.js";
+
 const socket = io();
+
+
+
+inicializarMapa();
+
 
 // Si se llama al timbre, notificar al servidor
 document.getElementById('timbre').addEventListener('click', function() {
@@ -30,25 +37,15 @@ socket.on('Grifo', (data) => {
 });
 
 // Manejar alerta de luces encendidas
-socket.on('Luces', (data) => {
-    if (document.getElementById('alerta-luces')) return;
-    
-    const alerta = document.createElement('div');
-    alerta.id = 'alerta-luces';
-    alerta.className = 'alerta alerta-luces';
-    alerta.innerHTML = `
-    <span>${data.mensaje}</span>
-    <button class="btn-resolver" onclick="resolverLuces()">Apagar luces</button>
-    `;
-    alertasContainer.appendChild(alerta);
+socket.on('Encender_luces', (data) => {
+    console.log('Luces encendidas en:', data);
+    let room = document.querySelector('.'+ data.mensaje);
+    room.style.fill = 'rgb(223, 220, 95)';
 });
 
-socket.on('LucesApagadas', () => {
-    const alerta = document.getElementById('alerta-luces');
-    if (alerta) {
-        alerta.style.animation = 'slideOut 0.3s ease-out';
-        setTimeout(() => alerta.remove(), 300);
-    }
+socket.on('Apagar_luces', (data) => {
+    let room = document.querySelector('.'+data.mensaje);
+    room.style.fill = 'rgb(190, 190, 190)';
 });
 
 // Funciones para resolver alertas
@@ -70,3 +67,5 @@ window.resolverLuces = function() {
     }
     socket.emit('LucesApagadas');
 };
+
+

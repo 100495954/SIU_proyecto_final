@@ -280,7 +280,12 @@ export function inicializarMapa() {
                   [[42,-56],[58,-46]],
                   [[58,-44],[42,-34]]]
   }
-  
+
+  [[65, 390], [65, 265], [245, 265], [245, 230],[275, 230], [375, 230],[375, 200],[260, 200] ,[260, 140],[310, 140]]
+  [[65, 375],[140, 375],[140, 390],[245, 390],[290, 390],[290, 295],[290, 390],[245, 380],[245, 340],[140, 340],[140, 390]]
+
+  let camino_cocina = [[7,0],[7,-20],[35,-20],[35,-25],[40,-25],[55,-25],[55,-30],[37,-30],[37,-39],[45,-39]];
+  let camino_total = [[7,-3],[19,-3],[19,0],[35,0],[42,0],[42,-15],[42,0],[35,-2],[35,-8],[19,-8],[19,0]];
   // Coger los trazos de los cuartos 
   let list = cuartos['polygonos'];
 
@@ -376,6 +381,27 @@ export function inicializarMapa() {
       const D = [x2, y1];
       return [A, B, C, D];
     }
+  function mover (x,y, updatedRooms) {
+
+      let cuarto = buscaCuarto(x, y, updatedRooms); // Llamamos a la función para buscar el cuarto
+      console.log(cuarto);
+      if (cuarto) {
+          let elemento = document.querySelector(`.${cuarto}`);
+          elemento.classList.add('seleccionado'); // Add the class to selected room
+  
+          cuartos['labels'].forEach(element => {
+          if (element !== cuarto) {
+              let otroElemento = document.querySelector(`.${element}`);
+              otroElemento.classList.remove('seleccionado'); // Remove the class from others
+          }
+          });
+      } else {
+          console.log("Fuera de la casa");
+      }
+  
+      circle.setAttribute("cx", x);
+      circle.setAttribute("cy", y);
+      }
 
   
   let { minX, minY, maxX, maxY } = conseguirminmaxcasa(roomPath);
@@ -408,29 +434,16 @@ export function inicializarMapa() {
   
         if (!estaEncendida) {
           // Verificar si ya hay otra luz encendida
-          const algunaLuzEncendida = cuartos.labels.some(label => {
-            const otroElemento = document.querySelector(`.${label}`);
-            return otroElemento && otroElemento.style.fill === 'rgb(223, 220, 95)';
-          });
-  
-          if (algunaLuzEncendida) {
-            return; // Ya hay una encendida, no hacemos nada
-          }
-  
-          room.style.fill = 'rgb(223, 220, 95)';
-          socket.emit('Luces', {
+          room.style.fill = 'rgb(223, 220, 95)'; // Cambia a encendido
+          socket.emit('Encender_luces', {
             tipo: 'luces',
-            mensaje: '¡Se han encendido las luces!',
-            timestamp: new Date().toISOString(),
+            mensaje: className,
           });
-  
         } else {
-          // Si está encendida, se apaga
-          room.style.fill = 'rgb(190, 190, 190)';
-          socket.emit('LucesApagadas', {
+          room.style.fill = 'rgb(190, 190, 190)'; // Cambia a apagado
+          socket.emit('Apagar_luces', {
             tipo: 'luces',
-            mensaje: '¡Se han apagado las luces!',
-            timestamp: new Date().toISOString(),
+            mensaje: className,
           });
         }
       });
@@ -444,20 +457,20 @@ export function inicializarMapa() {
     switch (e.key) {
       case 'ArrowUp':
         console.log('Arriba');
-        socket.emit('Mover', e.key);
         y = Math.max(0, y - paso);  // Límite superior
+        socket.emit('Mover', [x,y]);
         break;
       case 'ArrowDown':
-        socket.emit('Mover', e.key);
         y = Math.min(480, y + paso); // Límite inferior
+        socket.emit('Mover', [x,y]);
         break;
       case 'ArrowLeft':
-        socket.emit('Mover', e.key);
         x = Math.max(0, x - paso);  // Límite izquierdo
+        socket.emit('Mover', [x,y]);
         break;
       case 'ArrowRight':
-        socket.emit('Mover', e.key);
         x = Math.min(480, x + paso); // Límite derecho
+        socket.emit('Mover', [x,y]);
         break;
     }
     let cuarto = buscaCuarto(x, y, updatedRooms); // Llamamos a la función para buscar el cuarto
@@ -495,4 +508,11 @@ export function inicializarMapa() {
     let status_actual = [[x,y],lights];
     socket.emit('Resetear', status_actual)
   })
+
+  // Movemos la persona según las flechas del teclado
+  socket.on('Mover', (data) => {
+    let [x, y] = data;
+    mover(x,y,updatedRooms)    
+});
+
 }

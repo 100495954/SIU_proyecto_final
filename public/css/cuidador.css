@@ -114,3 +114,11 @@ svg {
 .bano {
   fill: rgb(190, 190, 190);
 }
+#mapa {
+  position: relative;
+  width: 446px;
+  height: 446px;
+  border: 2px solid #ccc;
+  background-size: cover;
+  background-position: center;
+}
