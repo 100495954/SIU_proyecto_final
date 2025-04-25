@@ -1,81 +1,377 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Alerta de Caída</title>
-  <script src="/socket.io/socket.io.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 20px;
-      background-color: #ffe6e6;
-    }
-    .alerta {
-      background-color: #ff4444;
-      color: white;
-      padding: 20px;
-      border-radius: 10px;
-      margin: 20px auto;
-      max-width: 500px;
-      font-size: 24px;
-    }
-    .btn-bien {
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      padding: 15px 32px;
-      text-align: center;
-      text-decoration: none;
-      display: inline-block;
-      font-size: 16px;
-      margin: 20px 2px;
-      cursor: pointer;
-      border-radius: 5px;
-    }
-    .btn-ayudar {
-      background-color: red;
-      color: white;
-      border: none;
-      padding: 15px 32px;
-      text-align: center;
-      text-decoration: none;
-      display: inline-block;
-      font-size: 16px;
-      margin: 20px 2px;
-      cursor: pointer;
-      border-radius: 5px;
-    }
-  </style>
-</head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¿Estás bien?</title>
+    <style>
+        /* Estilos CSS (igual que la versión anterior) */
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; text-align: center; background-color: #f0f0f0; }
+        .container { padding: 20px; background-color: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { color: #d9534f; } /* Rojo para alerta */
+        p { font-size: 1.2em; margin-bottom: 20px; }
+        .instrucciones { color: #555; font-weight: bold; border: 1px solid #ccc; padding: 10px; border-radius: 5px; background-color: #f9f9f9;}
+        .feedback { margin-top: 20px; font-weight: bold; }
+        #countdown { font-size: 1.5em; color: #f0ad4e; margin-top: 15px; /* Naranja */}
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+    </head>
 <body>
-  <div class="alerta">¡SE HA DETECTADO UNA CAÍDA!</div>
-  <h2>¿Estás bien?</h2>
-  <button id="recoger" class="btn-bien">Sí</button>
-  <button id="ayuda" class="btn-ayudar">Necesito ayuda</button>
+    <div class="container">
+        <h1>¡Caída Detectada!</h1>
+        <p>¿Te encuentras bien?</p>
+        <p class="instrucciones">
+            Inclina el móvil fuertemente hacia la <strong>DERECHA</strong> para indicar <strong>SÍ</strong>.<br>
+            Inclina el móvil fuertemente hacia la <strong>IZQUIERDA</strong> para indicar <strong>NO</strong>.
+        </p>
+        <div id="countdown">Llamando a emergencias en <strong>30</strong> segundos...</div>
+        <div id="feedback" class="feedback" style="display: none;"></div>
+    </div>
 
-  <script>
-    const socket = io();
-    
-    // Configurar botón de ayuda
-    document.getElementById('recoger').addEventListener('click', () => {
-      socket.emit('CaidaResuelta', {
-        tipo: 'caida',
-        mensaje: 'La persona ha sido ayudada.',
-        timestamp: new Date().toISOString()
-      });
-      window.location.href = '/';
-    });
+    <script type="module">
+        // Importa funciones necesarias si están en módulos
+        // import { mostrarAlerta } from './alertas.js'; // Si usas mostrarAlerta aquí
 
-    // Configurar botón de ayuda
-    document.getElementById('ayuda').addEventListener('click', () => {
-      alert('Se ha enviado una alerta de ayuda a emergencias.');
-    });
+        const socket = io(); // Conecta al servidor Socket.IO
 
-    // Escuchar si la caída ya fue resuelta desde otro dispositivo
-    socket.on('CaidaResuelta', () => {
-      window.location.href = '/';
-    });
-  </script>
+        // *** Cambios aquí: Usando umbral de giro ***
+        const umbralGiro = 50; // Ángulo en grados (ajusta experimentalmente)
+        const tiempoEspera = 30; // Segundos para esperar respuesta
+
+        const feedbackDiv = document.getElementById('feedback');
+        const countdownDiv = document.getElementById('countdown');
+        let gestoDetectado = false;
+        let timeoutEmergencia = null;
+        let listenerActivado = false; // Flag para saber si el listener está activo
+        let segundosRestantes = tiempoEspera;
+        let intervaloCountdown = null;
+        let peerConnection = null; // Para WebRTC
+        let localStream = null; // Stream local de la cámara
+
+        // --- Variables para conexión de video ---
+        let videoCamaraActivado = false; // Para controlar si la cámara está activa
+
+        // --- Función para manejar la respuesta (Sí/No) ---
+        function manejarRespuesta(respuesta) {
+            if (gestoDetectado) return; // Evita múltiples detecciones
+            gestoDetectado = true;
+            console.log(`Giro detectado: ${respuesta}`);
+
+            // 1. Detener temporizador y cuenta atrás
+            clearTimeout(timeoutEmergencia);
+            if (intervaloCountdown) clearInterval(intervaloCountdown);
+            countdownDiv.style.display = 'none';
+
+            // 2. Desactivar listener de orientación (inspirado en timbre.js)
+            desactivarListenerOrientacion();
+
+            // 3. Enviar evento al servidor
+            const evento = respuesta === 'SI' ? 'CaidaConfirmadaOk' : 'CaidaConfirmadaAyuda';
+            socket.emit(evento, {
+                tipo: 'respuestaCaidaGiro', // Indicamos que es por giro
+                respuesta: respuesta,
+                timestamp: new Date().toISOString()
+            });
+            console.log(`Evento '${evento}' enviado al servidor.`);
+
+            // 4. Mostrar feedback al usuario
+            feedbackDiv.style.display = 'block';
+            if (respuesta === 'SI') {
+                feedbackDiv.textContent = 'Respuesta registrada: SÍ. Volviendo a la página principal...';
+                feedbackDiv.style.color = 'green';
+                detenerTransmisionVideo(); // Detener la transmisión si está activa
+                setTimeout(() => {
+                    window.location.href = '/'; // O tu página principal
+                }, 3000);
+            } else { // NO
+                feedbackDiv.textContent = 'Respuesta registrada: NO. Solicitando ayuda...';
+                feedbackDiv.style.color = 'red';
+                // Mantener transmisión de video activa si el usuario necesita ayuda
+            }
+        }
+
+        // --- Función para llamar a emergencias (por timeout) ---
+        function llamarEmergencias() {
+             if (gestoDetectado) {
+                console.log("Timeout ignorado, ya se detectó un giro.");
+                return; // Ya se respondió
+             }
+            console.log("Tiempo agotado. Solicitando ayuda de emergencia.");
+            gestoDetectado = true;
+            if (intervaloCountdown) clearInterval(intervaloCountdown);
+
+             // Desactivar listener de orientación
+            desactivarListenerOrientacion();
+
+            // Enviar evento de emergencia al servidor
+            socket.emit('EmergenciaRequerida', {
+                tipo: 'emergenciaAutomatica',
+                mensaje: 'Llamada automática por falta de respuesta tras caída.',
+                timestamp: new Date().toISOString()
+            });
+
+            // Mostrar feedback
+            countdownDiv.style.display = 'none';
+            feedbackDiv.style.display = 'block';
+            feedbackDiv.textContent = 'Tiempo agotado. Solicitando ayuda de emergencia...';
+            feedbackDiv.style.color = 'red';
+        }
+
+        // --- Listener de Orientación para Gestos (adaptado de timbre.js) ---
+        function detectarGiro(event) {
+            // event.alpha, event.beta, event.gamma
+            if (gestoDetectado || typeof event.gamma !== 'number') {
+                 // Si ya se detectó un gesto o no hay datos de gamma, no hacer nada
+                return;
+            }
+
+            const gamma = event.gamma; // Inclinación izquierda (-90) a derecha (+90)
+            // console.log(`Gamma: ${gamma.toFixed(1)}`); // Para depuración
+
+            // Giro fuerte a la DERECHA -> SI
+            if (gamma > umbralGiro) {
+                manejarRespuesta('SI');
+            }
+            // Giro fuerte a la IZQUIERDA -> NO
+            else if (gamma < -umbralGiro) {
+                manejarRespuesta('NO');
+            }
+        }
+
+        // --- Función para activar el listener de orientación ---
+        function activarListenerOrientacion() {
+            if (!listenerActivado) {
+                // *** Cambio aquí: usando deviceorientation ***
+                window.addEventListener('deviceorientation', detectarGiro);
+                listenerActivado = true;
+                console.log("Listener de deviceorientation activado.");
+
+                // Iniciar temporizador para llamada automática
+                timeoutEmergencia = setTimeout(llamarEmergencias, tiempoEspera * 1000);
+                console.log(`Temporizador de emergencia iniciado (${tiempoEspera}s).`);
+
+                // Iniciar cuenta atrás visual
+                countdownDiv.querySelector('strong').textContent = tiempoEspera;
+                intervaloCountdown = setInterval(actualizarCountdown, 1000);
+            } else {
+                 console.log("El listener de orientación ya estaba activado.");
+            }
+        }
+
+         // --- Función para desactivar el listener de orientación ---
+         function desactivarListenerOrientacion() {
+            if (listenerActivado) {
+                // *** Cambio aquí: removeEventListener para deviceorientation ***
+                window.removeEventListener('deviceorientation', detectarGiro);
+                listenerActivado = false;
+                console.log("Listener de deviceorientation desactivado.");
+            }
+         }
+
+        // --- Cuenta atrás visual (sin cambios) ---
+        function actualizarCountdown() {
+            segundosRestantes--;
+            countdownDiv.querySelector('strong').textContent = segundosRestantes;
+            if (segundosRestantes <= 0) {
+                clearInterval(intervaloCountdown);
+            }
+        }
+
+        // --- NUEVAS FUNCIONES PARA TRANSMISIÓN DE VIDEO ---
+
+        // Iniciar la captura de la cámara y enviarla al cuidador
+        async function iniciarTransmisionVideo() {
+            try {
+                console.log("Iniciando transmisión de video automática...");
+                // Obtener acceso a la cámara
+                localStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "environment" }, // Usar cámara trasera si está disponible
+                    audio: true // Incluir audio también
+                });
+                
+                videoCamaraActivado = true;
+                console.log("Cámara accedida correctamente");
+                
+                // Crear conexión peer
+                crearPeerConnection();
+                
+                // Agregar tracks al peer connection
+                localStream.getTracks().forEach(track => {
+                    peerConnection.addTrack(track, localStream);
+                });
+                
+                // Crear y enviar oferta
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+                
+                socket.emit('offer-caida', { offer });
+                console.log("Oferta enviada al cuidador");
+                
+            } catch (error) {
+                console.error("Error al iniciar transmisión de video:", error);
+                videoCamaraActivado = false;
+            }
+        }
+        
+        // Detener la transmisión de video
+        function detenerTransmisionVideo() {
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            
+            if (peerConnection) {
+                peerConnection.close();
+                peerConnection = null;
+            }
+            
+            videoCamaraActivado = false;
+            console.log("Transmisión de video detenida");
+        }
+        
+        // Crear peer connection con los event listeners necesarios
+        function crearPeerConnection() {
+            if (peerConnection) {
+                console.warn("Ya existe una conexión PeerConnection.");
+                return;
+            }
+            
+            try {
+                peerConnection = new RTCPeerConnection();
+                
+                peerConnection.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        console.log("Enviando candidato ICE");
+                        socket.emit("ice-candidate-caida", { candidate: event.candidate });
+                    }
+                };
+                
+                peerConnection.oniceconnectionstatechange = () => {
+                    console.log(`Estado de conexión ICE: ${peerConnection.iceConnectionState}`);
+                    if (peerConnection.iceConnectionState === 'disconnected' || 
+                        peerConnection.iceConnectionState === 'closed' || 
+                        peerConnection.iceConnectionState === 'failed') {
+                        console.log("Conexión ICE cerrada o fallida");
+                        // No cerramos todo aquí para permitir reconexiones
+                    }
+                };
+                
+                console.log("PeerConnection creada correctamente");
+            } catch (error) {
+                console.error("Error al crear PeerConnection:", error);
+                peerConnection = null;
+            }
+        }
+
+        // --- SOCKET.IO EVENT LISTENERS PARA WEBRTC ---
+        
+        // Escuchar solicitud de video del cuidador
+        socket.on('SolicitarVideoCaida', async () => {
+            console.log("Solicitud de video recibida del cuidador");
+            if (!videoCamaraActivado) {
+                await iniciarTransmisionVideo();
+            } else {
+                console.log("La transmisión de video ya está activa");
+            }
+        });
+        
+        // Recibir respuesta del cuidador
+        socket.on('answer-caida', async ({ answer }) => {
+            console.log("Respuesta recibida del cuidador");
+            try {
+                if (peerConnection && peerConnection.signalingState !== 'closed') {
+                    await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+                    console.log("RemoteDescription (respuesta) establecida");
+                }
+            } catch (error) {
+                console.error("Error al procesar la respuesta:", error);
+            }
+        });
+        
+        // Recibir candidato ICE del cuidador
+        socket.on('ice-candidate-caida', async ({ candidate }) => {
+            try {
+                if (candidate && peerConnection && peerConnection.signalingState !== 'closed') {
+                    await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+                    console.log("Candidato ICE añadido");
+                }
+            } catch (error) {
+                console.error("Error al añadir candidato ICE:", error);
+            }
+        });
+        
+        // Escuchar orden de detener video
+        socket.on('DetenerVideoCaida', () => {
+            console.log("Orden recibida para detener transmisión de video");
+            detenerTransmisionVideo();
+        });
+
+        // --- Inicialización ---
+        function iniciarVerificacion() {
+            console.log("Página caida.html cargada. Iniciando verificación con giroscopio.");
+
+            // Enviar notificación inmediata al cuidador
+            socket.emit('CaidaDetectada', {
+                tipo: 'caidaDetectada',
+                mensaje: 'Se ha detectado una posible caída. Verificando estado de la persona.',
+                timestamp: new Date().toISOString()
+            });
+            console.log("Notificación de caída enviada al cuidador");
+            
+            // Comenzar transmisión de video automáticamente
+            iniciarTransmisionVideo();
+
+             // Solicitar permisos para DeviceOrientationEvent (importante para iOS >= 12.2)
+             // *** Cambio aquí: Permiso para DeviceOrientationEvent ***
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission()
+                    .then(permissionState => {
+                        if (permissionState === 'granted') {
+                            console.log("Permiso de orientación concedido.");
+                            activarListenerOrientacion(); // Activar listener *después* de obtener permiso
+                        } else {
+                            console.error("Permiso de orientación denegado. No se pueden detectar giros.");
+                            feedbackDiv.textContent = 'Error: Se necesita permiso para detectar la orientación del dispositivo.';
+                            feedbackDiv.style.color = 'red';
+                            feedbackDiv.style.display = 'block';
+                            countdownDiv.style.display = 'none';
+                            // Considerar qué hacer si no hay permisos: ¿llamar a emergencias? ¿mostrar error permanente?
+                            // setTimeout(llamarEmergencias, 2000); // Ejemplo: llamar tras 2s si no hay permiso
+                        }
+                    })
+                    .catch(error => {
+                         console.error("Error solicitando permiso de orientación:", error);
+                         feedbackDiv.textContent = 'Error al solicitar permisos de orientación.';
+                         feedbackDiv.style.color = 'red';
+                         feedbackDiv.style.display = 'block';
+                         countdownDiv.style.display = 'none';
+                    });
+            } else {
+                 // Navegadores/Plataformas sin necesidad de permiso explícito o sin soporte
+                 console.log("Intentando activar listener de orientación (sin permiso explícito necesario o no soportado).");
+                 // Verificar si el evento es soportado antes de añadir el listener
+                 if ('ondeviceorientation' in window) {
+                    activarListenerOrientacion();
+                 } else {
+                    console.error("DeviceOrientationEvent no soportado en este navegador.");
+                    feedbackDiv.textContent = 'Error: El navegador no soporta la detección de orientación.';
+                    feedbackDiv.style.color = 'red';
+                    feedbackDiv.style.display = 'block';
+                    countdownDiv.style.display = 'none';
+                 }
+            }
+        }
+
+        // Limpiar recursos al cerrar la página
+        window.addEventListener('beforeunload', () => {
+            detenerTransmisionVideo();
+            if (socket && socket.connected) {
+                socket.disconnect();
+            }
+        });
+
+        // Iniciar todo cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', iniciarVerificacion);
+    </script>
 </body>
 </html>
