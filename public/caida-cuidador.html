@@ -13,12 +13,12 @@
     
     <div id="alertas-container">
       <div class="alerta alerta-caida">
-        <strong>¡ALERTA!</strong> Se ha detectado una caída.
+        <strong>¡ALERTA!</strong>  Se ha detectado una posible caída. Verificando estado de la persona.
       </div>
     </div>
 
     <div class="accion-container">
-      <button id="ayudar">Ayudar a la persona</button>
+      <button id="volver">Volver a la pantalla principal</button>
     </div>
   </div>
 
@@ -33,8 +33,7 @@
         <div class="alerta alerta-caida">
           <strong>¡ALERTA!</strong> ${data.mensaje} (${new Date(data.timestamp).toLocaleTimeString()})
         </div>
-      `;
-      document.getElementById('ayudar').style.display = 'inline-block';
+        `;
     });
     
     // Escuchar resoluciones de caída
@@ -43,31 +42,19 @@
         <div class="alerta alerta-resuelta">
           <strong>Resuelto:</strong> ${data.mensaje} (${new Date(data.timestamp).toLocaleTimeString()})
         </div>
-        <button id="volver">Volver a la pantalla principal</button>
       `;
-      document.getElementById('volver').addEventListener('click', () => {
-        window.location.href = '/cuidador.html';
-      });
-      document.getElementById('ayudar').style.display = 'none';
     });
     
     socket.on('PedirAyuda', (data) => {
       alertasContainer.innerHTML += `
-        <div class="alerta alerta-resuelta">
-          <strong>Resuelto:</strong> ${'La persona ha solicitado ayuda.'} (${new Date(data.timestamp).toLocaleTimeString()})
+        <div class="alerta alerta-ayuda">
+          <strong>¡ATENCIÓN!:</strong> ${'La persona ha solicitado ayuda.'} (${new Date(data.timestamp).toLocaleTimeString()})
         </div>
-        <button id="volver">Volver a la pantalla principal</button>
       `;
-      document.getElementById('ayudar').style.display = 'none';
     });
 
-    // Configurar el botón de ayuda
-    document.getElementById('ayudar').addEventListener('click', () => {
-      socket.emit('CaidaResuelta', {
-        tipo: 'caida',
-        mensaje: 'La persona ha sido ayudada.',
-        timestamp: new Date().toISOString()
-      });
+    // Configurar el botón de volver
+    document.getElementById('volver').addEventListener('click', () => {
       window.location.href = '/cuidador.html';
     });
   </script>

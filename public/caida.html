@@ -67,9 +67,10 @@
 
             // 3. Enviar evento al servidor
             const evento = respuesta === 'SI' ? 'CaidaResuelta' : 'PedirAyuda';
+            const mensaje = respuesta === 'SI' ? 'La persona ha confirmado que está bien.' : 'La persona necesita ayuda.';
             socket.emit(evento, {
                 tipo: 'respuestaCaidaGiro', // Indicamos que es por giro
-                respuesta: respuesta,
+                mensaje: mensaje,
                 timestamp: new Date().toISOString()
             });
             console.log(`Evento '${evento}' enviado al servidor.`);
@@ -81,7 +82,7 @@
                 feedbackDiv.style.color = 'green';
                 detenerTransmisionVideo(); // Detener la transmisión si está activa
                 setTimeout(() => {
-                    window.location.href = '/'; // O tu página principal
+                    window.location.href = '/';
                 }, 3000);
             } else { // NO
                 feedbackDiv.textContent = 'Respuesta registrada: NO. Solicitando ayuda...';
@@ -126,7 +127,6 @@
             }
 
             const gamma = event.gamma; // Inclinación izquierda (-90) a derecha (+90)
-            // console.log(`Gamma: ${gamma.toFixed(1)}`); // Para depuración
 
             // Giro fuerte a la DERECHA -> SI
             if (gamma > umbralGiro) {
@@ -141,7 +141,6 @@
         // --- Función para activar el listener de orientación ---
         function activarListenerOrientacion() {
             if (!listenerActivado) {
-                // *** Cambio aquí: usando deviceorientation ***
                 window.addEventListener('deviceorientation', detectarGiro);
                 listenerActivado = true;
                 console.log("Listener de deviceorientation activado.");
@@ -161,14 +160,13 @@
          // --- Función para desactivar el listener de orientación ---
          function desactivarListenerOrientacion() {
             if (listenerActivado) {
-                // *** Cambio aquí: removeEventListener para deviceorientation ***
                 window.removeEventListener('deviceorientation', detectarGiro);
                 listenerActivado = false;
                 console.log("Listener de deviceorientation desactivado.");
             }
          }
 
-        // --- Cuenta atrás visual (sin cambios) ---
+        // --- Cuenta atrás visual ---
         function actualizarCountdown() {
             segundosRestantes--;
             countdownDiv.querySelector('strong').textContent = segundosRestantes;
@@ -186,7 +184,7 @@
                 // Obtener acceso a la cámara
                 localStream = await navigator.mediaDevices.getUserMedia({ 
                     video: { facingMode: "environment" }, // Usar cámara trasera si está disponible
-                    audio: true // Incluir audio también
+                    audio: true 
                 });
                 
                 videoCamaraActivado = true;
@@ -322,7 +320,6 @@
             iniciarTransmisionVideo();
 
              // Solicitar permisos para DeviceOrientationEvent (importante para iOS >= 12.2)
-             // *** Cambio aquí: Permiso para DeviceOrientationEvent ***
             if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
                 DeviceOrientationEvent.requestPermission()
                     .then(permissionState => {
@@ -335,8 +332,6 @@
                             feedbackDiv.style.color = 'red';
                             feedbackDiv.style.display = 'block';
                             countdownDiv.style.display = 'none';
-                            // Considerar qué hacer si no hay permisos: ¿llamar a emergencias? ¿mostrar error permanente?
-                            // setTimeout(llamarEmergencias, 2000); // Ejemplo: llamar tras 2s si no hay permiso
                         }
                     })
                     .catch(error => {
