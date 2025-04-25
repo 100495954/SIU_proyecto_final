@@ -41,25 +41,7 @@ svg {
   stroke-width: 3;
 }
 
-.cocina {
-  fill: rgb(190, 190, 190);
-}
-.pasillo {
-  fill: rgb(190, 190, 190);
-}
-.salon {
-  fill: rgb(190, 190, 190);
-}
-.dormitorio1 {
-  fill: rgb(190, 190, 190);
-} 
-.dormitorio2 {
-  fill: rgb(190, 190, 190);
-}
-.dormitorio3 {
-  fill: rgb(190, 190, 190);
-}
-.bano {
+.cocina .pasillo .salon .dormitorio1 .dormitorio2 .dormitorio3 .bano {
   fill: rgb(190, 190, 190);
 }
 
@@ -162,7 +144,7 @@ p {
   transform: translate(-50%, -50%);
   width: 90vw;
   height: 80vh;
-  background-image: url("../ChatGPT\ Image\ 25\ abr\ 2025\,\ 00_18_12.png");
+  background-image: url("/public/assets/timbre.png");
   display: flex;
   flex-direction: column;
   justify-content: top;
