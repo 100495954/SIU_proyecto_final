@@ -66,3 +66,51 @@
   from { transform: translateX(0); opacity: 1; }
   to { transform: translateX(100%); opacity: 0; }
 }
+
+svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.outerRoom {
+  fill: rgba(128, 128, 128, 0.24); /* Fill color for outer room */
+  stroke: black;
+  stroke-width: 3;
+}
+
+.cocina, .pasillo, .salon, .dormitorio1, .dormitorio2, .dormitorio3, .bano {
+  opacity: 0.5;
+  stroke: rgba(0, 0, 0, 0.297);
+  stroke-width: 2;
+}
+
+.seleccionado {
+  fill: hsl(194, 86%, 52%) !important; 
+  stroke: black;
+  stroke-width: 3;
+}
+
+.cocina {
+  fill: rgb(190, 190, 190);
+}
+.pasillo {
+  fill: rgb(190, 190, 190);
+}
+.salon {
+  fill: rgb(190, 190, 190);
+}
+.dormitorio1 {
+  fill: rgb(190, 190, 190);
+} 
+.dormitorio2 {
+  fill: rgb(190, 190, 190);
+}
+.dormitorio3 {
+  fill: rgb(190, 190, 190);
+}
+.bano {
+  fill: rgb(190, 190, 190);
+}
