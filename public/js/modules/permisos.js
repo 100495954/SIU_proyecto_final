@@ -1,11 +1,7 @@
 import { iniciarDeteccionCaida, configurarBotonRecoger } from './caidas.js';
 import { iniciarDeteccionSonido, configurarBotonApagarGrifo } from './grifo.js';
-<<<<<<< HEAD
+import { iniciarDeteccionTimbre } from './timbre.js';
 import { iniciarDeteccionLuces } from './luces.js';
-=======
-import { iniciarDeteccionLuces, configurarBotonApagarLuces } from './luces.js';
-import { iniciarDeteccionTimbre} from './timbre.js';
->>>>>>> 40fca29c10b4b515a3f8a9b942bf5fed7182bbcf
 
 // Función para solicitar permisos y activar todas las funcionalidades
 export function inicializarPermisos() {

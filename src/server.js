@@ -53,12 +53,8 @@ io.on('connection', (socket) => {
     io.emit('Timbre');
   });
 
-<<<<<<< HEAD
   // Los mensajes para manejar las luces de la casa
   socket.on('Encender_luces', (data) => {
-=======
-  socket.on('Luces', (data) => {
->>>>>>> 40fca29c10b4b515a3f8a9b942bf5fed7182bbcf
     console.log('Luces de ',data, ' cambiadas');
     socket.broadcast.emit('Encender_luces', data);
   });
