@@ -4,8 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pantalla de Caída</title>
+  <link rel="stylesheet" href="css/caida-cuidador.css">
   <script src="/socket.io/socket.io.js"></script>
-  <link rel="stylesheet" href="css/caida.css">
+  <script src="/js/modules/caidas.js" defer></script>
+  <script src="/js/caida-cuidador.js" defer></script> 
 </head>
 <body>
   <div class="container">
@@ -21,42 +23,5 @@
       <button id="volver">Volver a la pantalla principal</button>
     </div>
   </div>
-
-  <script src="/js/modules/caidas.js"></script>
-  <script>
-    const socket = io();
-    const alertasContainer = document.getElementById('alertas-container');
-    
-    // Escuchar alertas de caída
-    socket.on('Caida', (data) => {
-      alertasContainer.innerHTML = `
-        <div class="alerta alerta-caida">
-          <strong>¡ALERTA!</strong> ${data.mensaje} (${new Date(data.timestamp).toLocaleTimeString()})
-        </div>
-        `;
-    });
-    
-    // Escuchar resoluciones de caída
-    socket.on('CaidaResuelta', (data) => {
-      alertasContainer.innerHTML += `
-        <div class="alerta alerta-resuelta">
-          <strong>Resuelto:</strong> ${data.mensaje} (${new Date(data.timestamp).toLocaleTimeString()})
-        </div>
-      `;
-    });
-    
-    socket.on('PedirAyuda', (data) => {
-      alertasContainer.innerHTML += `
-        <div class="alerta alerta-ayuda">
-          <strong>¡ATENCIÓN!:</strong> ${'La persona ha solicitado ayuda.'} (${new Date(data.timestamp).toLocaleTimeString()})
-        </div>
-      `;
-    });
-
-    // Configurar el botón de volver
-    document.getElementById('volver').addEventListener('click', () => {
-      window.location.href = '/cuidador.html';
-    });
-  </script>
 </body>
 </html>

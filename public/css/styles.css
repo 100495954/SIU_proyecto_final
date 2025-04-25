@@ -24,7 +24,7 @@ svg {
 }
 
 .outerRoom {
-  fill: rgba(128, 128, 128, 0.24); /* Fill color for outer room */
+  fill: rgba(128, 128, 128, 0.24);
   stroke: black;
   stroke-width: 3;
 }
@@ -41,7 +41,7 @@ svg {
   stroke-width: 3;
 }
 
-.cocina .pasillo .salon .dormitorio1 .dormitorio2 .dormitorio3 .bano {
+.cocina, .pasillo, .salon, .dormitorio1, .dormitorio2, .dormitorio3, .bano {
   fill: rgb(190, 190, 190);
 }
 
@@ -178,7 +178,7 @@ p {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: black; /* Este fondo queda detrás del video, así que está bien */
+  background: black;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -191,11 +191,9 @@ p {
   height: auto;
   flex-grow: 1;
   background: transparent;
-  object-fit: cover; /* Hace que el video llene el contenedor sin deformarse */
+  object-fit: cover;
 }
 
-
-/* Adaptación para móviles pequeños */
 @media (max-width: 1000px) {
   #llamada-timbre {
     width: 95vw;
@@ -207,6 +205,4 @@ p {
     margin-top: 20rem;
     font-size: 6.5rem;
   }
-
-
 }

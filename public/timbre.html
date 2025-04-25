@@ -3,26 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Timbre - Cámara</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background-color: black;
-      color: white;
-      font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
-
-    video {
-      width: 100%;
-      max-height: 80vh;
-      background: #000;
-    }
-  </style>
+  <link rel="stylesheet" href="css/timbre.css">
 </head>
 <body>
   <h2>Dispositivo del Timbre</h2>
@@ -43,9 +24,9 @@
         });
 
         video.srcObject = stream;
-        console.log("✅ Cámara activada correctamente.");
+        console.log("Cámara activada correctamente.");
       } catch (err) {
-        console.error("❌ Error al acceder a la cámara:", err);
+        console.error("Error al acceder a la cámara:", err);
         alert("No se pudo acceder a la cámara. Revisa los permisos.");
       }
     }
@@ -66,7 +47,7 @@
       };
 
       socket.on("answer", async ({ answer }) => {
-        console.log("📨 Respuesta recibida del visor.");
+        console.log("Respuesta recibida del visor.");
         await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
       });
 
@@ -87,12 +68,12 @@
         offer
       });
 
-      console.log("📡 Oferta enviada al visor.");
+      console.log("Oferta enviada al visor.");
     }
 
     // Escuchar cuando alguien quiere conectarse
     socket.on("viewer-ready", async () => {
-      console.log("👀 Visor conectado. Iniciando conexión WebRTC...");
+      console.log("Visor conectado. Iniciando conexión WebRTC...");
       await crearPeerConnection();
     });
 

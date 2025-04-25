@@ -4,16 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>¿Estás bien?</title>
-    <style>
-        /* Estilos CSS (igual que la versión anterior) */
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; text-align: center; background-color: #f0f0f0; }
-        .container { padding: 20px; background-color: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        h1 { color: #d9534f; } /* Rojo para alerta */
-        p { font-size: 1.2em; margin-bottom: 20px; }
-        .instrucciones { color: #555; font-weight: bold; border: 1px solid #ccc; padding: 10px; border-radius: 5px; background-color: #f9f9f9;}
-        .feedback { margin-top: 20px; font-weight: bold; }
-        #countdown { font-size: 1.5em; color: #f0ad4e; margin-top: 15px; /* Naranja */}
-    </style>
+    <link rel="stylesheet" href="css/caida.css">
     <script src="/socket.io/socket.io.js"></script>
     </head>
 <body>
@@ -29,12 +20,8 @@
     </div>
 
     <script type="module">
-        // Importa funciones necesarias si están en módulos
-        // import { mostrarAlerta } from './alertas.js'; // Si usas mostrarAlerta aquí
+        const socket = io();
 
-        const socket = io(); // Conecta al servidor Socket.IO
-
-        // *** Cambios aquí: Usando umbral de giro ***
         const umbralGiro = 50; // Ángulo en grados (ajusta experimentalmente)
         const tiempoEspera = 30; // Segundos para esperar respuesta
 
@@ -42,14 +29,12 @@
         const countdownDiv = document.getElementById('countdown');
         let gestoDetectado = false;
         let timeoutEmergencia = null;
-        let listenerActivado = false; // Flag para saber si el listener está activo
+        let listenerActivado = false;
         let segundosRestantes = tiempoEspera;
         let intervaloCountdown = null;
-        let peerConnection = null; // Para WebRTC
-        let localStream = null; // Stream local de la cámara
-
-        // --- Variables para conexión de video ---
-        let videoCamaraActivado = false; // Para controlar si la cámara está activa
+        let peerConnection = null;
+        let localStream = null;
+        let videoCamaraActivado = false;
 
         // --- Función para manejar la respuesta (Sí/No) ---
         function manejarRespuesta(respuesta) {
@@ -57,17 +42,17 @@
             gestoDetectado = true;
             console.log(`Giro detectado: ${respuesta}`);
 
-            // 1. Detener temporizador y cuenta atrás
+            // Detener temporizador y cuenta atrás
             clearTimeout(timeoutEmergencia);
             if (intervaloCountdown) clearInterval(intervaloCountdown);
             countdownDiv.style.display = 'none';
 
-            // 2. Desactivar listener de orientación 
+            // Desactivar listener de orientación 
             desactivarListenerOrientacion();
 
-            // 3. Enviar evento al servidor
+            // Enviar evento al servidor
             const evento = respuesta === 'SI' ? 'CaidaResuelta' : 'PedirAyuda';
-            const mensaje = respuesta === 'SI' ? 'La persona ha confirmado que está bien.' : 'La persona necesita ayuda.';
+            const mensaje = respuesta === 'SI' ? 'La persona ha confirmado que está bien' : 'La persona necesita ayuda';
             socket.emit(evento, {
                 tipo: 'respuestaCaidaGiro', // Indicamos que es por giro
                 mensaje: mensaje,
@@ -75,7 +60,7 @@
             });
             console.log(`Evento '${evento}' enviado al servidor.`);
 
-            // 4. Mostrar feedback al usuario
+            // Mostrar feedback al usuario
             feedbackDiv.style.display = 'block';
             if (respuesta === 'SI') {
                 feedbackDiv.textContent = 'Respuesta registrada: SÍ. Volviendo a la página principal...';
@@ -118,7 +103,7 @@
             feedbackDiv.style.color = 'red';
         }
 
-        // --- Listener de Orientación para Gestos (adaptado de timbre.js) ---
+        // --- Listener de orientación para gestos ---
         function detectarGiro(event) {
             // event.alpha, event.beta, event.gamma
             if (gestoDetectado || typeof event.gamma !== 'number') {

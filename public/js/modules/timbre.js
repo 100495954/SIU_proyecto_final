@@ -2,7 +2,7 @@ let socket = io();
 let pc;
 let remoteVideo;
 
-export async function timbre() {
+export async function iniciarDeteccionTimbre() {
     try {
         const streamAudio = await navigator.mediaDevices.getUserMedia({ audio: true });
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
