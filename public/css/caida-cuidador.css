@@ -1,0 +1,101 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  padding: 15px;
+  background-color: #f8f8f8;
+}
+
+.container {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 10px;
+}
+
+h1 {
+  font-size: 32px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.alerta {
+  padding: 15px;
+  margin: 15px 0;
+  border-radius: 5px;
+  color: white;
+  font-size: 16px;
+}
+
+.alerta-caida {
+  background-color: #e7dc3c;
+}
+
+.alerta-resuelta {
+  background-color: #2ecc71;
+}
+
+.alerta-ayuda {
+  background-color: #ff0000;
+}
+
+.accion-container {
+  text-align: center;
+  margin: 20px 0;
+}
+
+button {
+  display: inline-block;
+  width: 100%;
+  padding: 10px 15px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+#alertas-container {
+  margin-top: 15px;
+}
+
+/* Tablets (portrait) */
+@media screen and (min-width: 600px) {
+  .container {
+    max-width: 600px;
+    padding: 15px;
+  }
+  
+  h1 {
+    font-size: 28px;
+  }
+  
+  .alerta {
+    padding: 18px;
+    font-size: 18px;
+  }
+}
+
+/* Desktop */
+@media screen and (min-width: 992px) {
+  .container {
+    max-width: 800px;
+    padding: 20px;
+  }
+  
+  h1 {
+    font-size: 32px;
+    margin-bottom: 25px;
+  }
+  
+  .alerta {
+    padding: 20px;
+    border-radius: 8px;
+  }
+}

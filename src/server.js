@@ -14,48 +14,51 @@ const io = new Server(server);
 // Configurar Express para servir archivos estáticos (front-end)
 app.use(express.static('public'));
 
-// Cuando un cliente se conecta a Socket.io
+// Eventos de Socket.IO
 io.on('connection', (socket) => {
   console.log('Nuevo cliente conectado');
 
-  // Los mensajes para manejar el movimiento de la persona en la casa
   socket.on('Mover', (data) => {
     console.log('Movimiento recibido:', data);
     socket.broadcast.emit('Mover', data);
   });
 
-  // Manejar alerta de caída
   socket.on('Caida', (data) => {
     console.log('Alerta de caída recibida:', data);
     socket.broadcast.emit('Caida', data);
   });
 
-  // Manejar resolución de caída
   socket.on('CaidaResuelta', (data) => {
     console.log('Caída resuelta:', data);
     socket.broadcast.emit('CaidaResuelta', data);
   });
 
-  // Manejar alerta de grifo abierto
+  socket.on('PedirAyuda', (data) => {
+    console.log('La persona ha solicitado ayuda.', data);
+    socket.broadcast.emit('PedirAyuda', data);
+  });
+
   socket.on('Grifo', (data) => {
     console.log('Alerta de grifo abierto:', data);
     socket.broadcast.emit('Grifo', data);
   });
 
-  // Manejar grifo apagado
   socket.on('GrifoApagado', (data) => {
     console.log('Grifo apagado:', data);
     socket.broadcast.emit('GrifoApagado', data);
   });
 
-  // Manejar timbre
   socket.on('Timbre', () => {
     console.log('Se ha llamado al timbre');
     io.emit('Timbre');
   });
 
+<<<<<<< HEAD
   // Los mensajes para manejar las luces de la casa
   socket.on('Encender_luces', (data) => {
+=======
+  socket.on('Luces', (data) => {
+>>>>>>> 40fca29c10b4b515a3f8a9b942bf5fed7182bbcf
     console.log('Luces de ',data, ' cambiadas');
     socket.broadcast.emit('Encender_luces', data);
   });
@@ -65,25 +68,26 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('Apagar_luces', data);
   });
 
-  // Los mensajes para manejar las alertas de la casa
   socket.on('Alerta', (data) => {
     console.log('Alerta de ',data);
     socket.broadcast.emit('Alerta', data);
   });
 
-  // Los mensajes para manejar las luces de la casa
   socket.on('volver', () => {
     console.log('volviendo a cuidador.html');
     socket.broadcast.emit('volver');
   });
 
-  // Los mensajes para manejar las luces de la casa
   socket.on('Resetear', (data) => {
     console.log('Posicion reseteada ');
     socket.broadcast.emit('Resetear', data);
   });
 
-  // Cuando un cliente se desconecta
+  socket.on('viewer-ready', () => socket.broadcast.emit('viewer-ready'));
+  socket.on('offer', ({ offer }) => socket.broadcast.emit('offer', { offer }));
+  socket.on('answer', ({ answer }) => socket.broadcast.emit('answer', { answer }));
+  socket.on('ice-candidate', ({ candidate }) => socket.broadcast.emit('ice-candidate', { candidate }));
+
   socket.on('disconnect', () => {
     console.log('Cliente desconectado');
   });

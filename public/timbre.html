@@ -2,54 +2,83 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Alerta de Timbre</title>
-  <script src="/socket.io/socket.io.js"></script>
+  <title>Timbre - Cámara</title>
   <link rel="stylesheet" href="css/timbre.css">
 </head>
 <body>
-  <h1>Pantalla del timbre</h1>
+  <h2>Dispositivo del Timbre</h2>
+  <video id="videoPreview" autoplay muted playsinline></video>
 
-  <div class="alerta-timbre">¡Se ha llamado al timbre!</div>
-
-  <!-- Botones visibles desde el inicio -->
-  <div class="botones-container" style="display: flex;">
-    <button class="btn btn-abrir">Abrir Puerta</button>
-    <button class="btn btn-colgar">Colgar</button>
-  </div>
-
-  <script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="module">
     const socket = io();
+    const video = document.getElementById('videoPreview');
+    let stream;
+    let peerConnection;
 
-    socket.on('Timbre', () => {
-      const alerta = document.querySelector('.alerta-timbre');
-      alerta.style.display = 'block';
-    });
+    async function iniciarCamara() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false
+        });
 
-    // Botón Abrir Puerta
-    document.querySelector('.btn-abrir').addEventListener('click', function () {
-      socket.emit('AbrirPuerta');
-      resetearInterfaz();
-      alert('Puerta abierta');
-      window.location.href = 'index.html';
-    });
-
-    // Botón Colgar
-    document.querySelector('.btn-colgar').addEventListener('click', function () {
-      socket.emit('Colgar');
-      resetearInterfaz();
-      alert('Se ha colgado la llamada');
-      window.location.href = 'index.html';
-    });
-
-    // Función para ocultar alerta y botones
-    function resetearInterfaz() {
-      document.querySelector('.alerta-timbre').style.display = 'none';
-      document.querySelector('.botones-container').style.display = 'none';
+        video.srcObject = stream;
+        console.log("Cámara activada correctamente.");
+      } catch (err) {
+        console.error("Error al acceder a la cámara:", err);
+        alert("No se pudo acceder a la cámara. Revisa los permisos.");
+      }
     }
 
-    // Eventos opcionales
-    socket.on('PuertaAbierta', () => resetearInterfaz());
-    socket.on('LlamadaFinalizada', () => resetearInterfaz());
+    async function crearPeerConnection() {
+      peerConnection = new RTCPeerConnection();
+
+      stream.getTracks().forEach(track => {
+        peerConnection.addTrack(track, stream);
+      });
+
+      peerConnection.onicecandidate = (event) => {
+        if (event.candidate) {
+          socket.emit("ice-candidate", {
+            candidate: event.candidate
+          });
+        }
+      };
+
+      socket.on("answer", async ({ answer }) => {
+        console.log("Respuesta recibida del visor.");
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+      });
+
+      socket.on("ice-candidate", async ({ candidate }) => {
+        if (candidate) {
+          try {
+            await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+          } catch (e) {
+            console.error("Error añadiendo ICE candidate:", e);
+          }
+        }
+      });
+
+      const offer = await peerConnection.createOffer();
+      await peerConnection.setLocalDescription(offer);
+
+      socket.emit("offer", {
+        offer
+      });
+
+      console.log("Oferta enviada al visor.");
+    }
+
+    // Escuchar cuando alguien quiere conectarse
+    socket.on("viewer-ready", async () => {
+      console.log("Visor conectado. Iniciando conexión WebRTC...");
+      await crearPeerConnection();
+    });
+
+    // Iniciar cámara automáticamente
+    iniciarCamara();
   </script>
 </body>
 </html>

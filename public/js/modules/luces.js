@@ -56,6 +56,23 @@ const socket = io();
         // If brightness goes back up, we know the lights are on
         if (brilloPromedio > brilloUmbral && !lucesEncendidas) {
           lucesEncendidas = true;
+<<<<<<< HEAD
+=======
+          estadosAlertas.luces = true;
+          mostrarAlerta('luces', 'Se han detectado luces encendidas en la habitación.');
+          const btn = document.getElementById('apagarLuces');
+          if (btn) btn.style.display = 'inline-block';
+        } else if (brilloPromedio <= brilloUmbral && lucesEncendidas) {
+          lucesEncendidas = false;
+          estadosAlertas.luces = false;
+          // Eliminar alerta existente
+          const alertaLuces = document.getElementById('alerta-luces');
+          if (alertaLuces) alertaLuces.remove();
+
+          // Mostrar resolución y restablecer estado
+          mostrarAlerta('luces', 'Las luces están apagadas.');
+          document.getElementById('apagarLuces').style.display = 'none';
+>>>>>>> 40fca29c10b4b515a3f8a9b942bf5fed7182bbcf
         }
       }
 
@@ -71,3 +88,26 @@ const socket = io();
     alert('No se pudo acceder a la cámara para detección de luces.');
   }
 }
+<<<<<<< HEAD
+=======
+
+// Configuración del botón para apagar las luces
+export function configurarBotonApagarLuces() {
+  const btn = document.getElementById('apagarLuces');
+  if (!btn) return;
+  
+  btn.addEventListener('click', () => {
+    // Eliminar alerta de luces
+    const alertaLuces = document.getElementById('alerta-luces');
+    if (alertaLuces) alertaLuces.remove();
+
+    // Mostrar resolución
+    mostrarAlerta('luces', 'Las luces están apagadas.');
+    btn.style.display = 'none';
+
+    // Restablecer estado
+    estadosAlertas.luces = false;
+    lucesEncendidas = false;
+  });
+}
+>>>>>>> 40fca29c10b4b515a3f8a9b942bf5fed7182bbcf

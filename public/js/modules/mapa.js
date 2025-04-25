@@ -1596,6 +1596,7 @@ export function inicializarMapa() {
       });
     });
   });
+<<<<<<< HEAD
   
   document.addEventListener('keydown', (e) => {
     if (e.key === ' ') {
@@ -1603,6 +1604,20 @@ export function inicializarMapa() {
       caminar(updatedRooms);
     }
   })
+=======
+
+  // Escuchar el evento 'LucesApagadas' del socket
+  socket.on('LucesApagadas', (data) => {
+    // Apagar todas las luces que estén encendidas
+    cuartos.labels.forEach(className => {
+      const elemento = document.querySelector(`.${className}`);
+      if (elemento && elemento.style.fill === 'rgb(223, 220, 95)') {
+        elemento.style.fill = 'rgb(190, 190, 190)';
+      }
+    });
+    console.log('Luces apagadas remotamente:', data.mensaje);
+  });
+>>>>>>> 40fca29c10b4b515a3f8a9b942bf5fed7182bbcf
 
   // Movemos la persona según las flechas del teclado
   document.addEventListener('keydown', (e) => {
@@ -1645,8 +1660,6 @@ export function inicializarMapa() {
     circle.setAttribute("cy", y);
   });
 
-  
-
   // Llamamos a la función de inicialización
   CrearPersona(x,y, circle, svg);
   socket.on('volver', () => {
@@ -1661,6 +1674,7 @@ export function inicializarMapa() {
     let status_actual = [[x,y],lights];
     socket.emit('Resetear', status_actual)
   })
+<<<<<<< HEAD
 
   // Movemos la persona según las flechas del teclado
   socket.on('Mover', (data) => {
@@ -1668,4 +1682,6 @@ export function inicializarMapa() {
     mover(x,y,updatedRooms)    
 });
 
+=======
+>>>>>>> 40fca29c10b4b515a3f8a9b942bf5fed7182bbcf
 }

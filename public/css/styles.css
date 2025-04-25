@@ -24,7 +24,7 @@ svg {
 }
 
 .outerRoom {
-  fill: rgba(128, 128, 128, 0.24); /* Fill color for outer room */
+  fill: rgba(128, 128, 128, 0.24);
   stroke: black;
   stroke-width: 3;
 }
@@ -41,25 +41,7 @@ svg {
   stroke-width: 3;
 }
 
-.cocina {
-  fill: rgb(190, 190, 190);
-}
-.pasillo {
-  fill: rgb(190, 190, 190);
-}
-.salon {
-  fill: rgb(190, 190, 190);
-}
-.dormitorio1 {
-  fill: rgb(190, 190, 190);
-} 
-.dormitorio2 {
-  fill: rgb(190, 190, 190);
-}
-.dormitorio3 {
-  fill: rgb(190, 190, 190);
-}
-.bano {
+.cocina, .pasillo, .salon, .dormitorio1, .dormitorio2, .dormitorio3, .bano {
   fill: rgb(190, 190, 190);
 }
 
@@ -153,5 +135,74 @@ p {
 
   p {
     font-size: 26px;
+  }
+}
+#llamada-timbre {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90vw;
+  height: 80vh;
+  background-image: url("../assets/timbre.png");
+  display: flex;
+  flex-direction: column;
+  justify-content: top;
+  align-items: center;
+  color: white;
+  border-radius: 20px;
+  box-shadow: 0 0 20px rgba(30, 255, 0, 0.8);
+  font-weight: bold;
+  gap: 20px;
+  padding: 20px;
+  text-align: center;
+}Alguien llama al timbre
+
+#llamada-timbre p {
+  font-size: 2.5rem;
+  margin-bottom: 30px;
+}
+
+
+#acp {
+  background-color: green;
+}
+
+#rechazar {
+  background-color: #ff0000;
+}
+
+#videollamada {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: black;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+#video {
+  width: 100%;
+  height: auto;
+  flex-grow: 1;
+  background: transparent;
+  object-fit: cover;
+}
+
+@media (max-width: 1000px) {
+  #llamada-timbre {
+    width: 95vw;
+    height: 90vh;
+    gap: 15px;
+  }
+
+  #llamada-timbre h2 {
+    margin-top: 20rem;
+    font-size: 6.5rem;
   }
 }

@@ -2,57 +2,26 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Alertas de Caída</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pantalla de Caída</title>
+  <link rel="stylesheet" href="css/caida-cuidador.css">
   <script src="/socket.io/socket.io.js"></script>
-  <link rel="stylesheet" href="css/caida.css">
+  <script src="/js/modules/caidas.js" defer></script>
+  <script src="/js/caida-cuidador.js" defer></script> 
 </head>
 <body>
-  <h1>Alertas de Caída</h1>
-  
-  <!-- Alerta visible desde el inicio -->
-  <div id="alertas-container">
-    <div class="alerta alerta-caida">
-      <strong>¡ALERTA!</strong> Se ha detectado una caída.
+  <div class="container">
+    <h1>Pantalla de Caída</h1>
+    
+    <div id="alertas-container">
+      <div class="alerta alerta-caida">
+        <strong>¡ALERTA!</strong>  Se ha detectado una posible caída. Verificando estado de la persona.
+      </div>
+    </div>
+
+    <div class="accion-container">
+      <button id="volver">Volver a la pantalla principal</button>
     </div>
   </div>
-
-  <!-- Botón visible desde el inicio -->
-  <button id="ayudar" style="display: inline-block;">Ayudar a la persona</button>
-
-  <script src="/js/modules/caidas.js"></script>
-  <script>
-    const socket = io();
-    const alertasContainer = document.getElementById('alertas-container');
-    
-    // Escuchar alertas de caída
-    socket.on('Caida', (data) => {
-      alertasContainer.innerHTML = `
-        <div class="alerta alerta-caida">
-          <strong>¡ALERTA!</strong> ${data.mensaje} (${new Date(data.timestamp).toLocaleTimeString()})
-        </div>
-      `;
-      document.getElementById('ayudar').style.display = 'inline-block';
-    });
-    
-    // Escuchar resoluciones de caída
-    socket.on('CaidaResuelta', (data) => {
-      alertasContainer.innerHTML += `
-        <div class="alerta alerta-resuelta">
-          <strong>Resuelto:</strong> ${data.mensaje} (${new Date(data.timestamp).toLocaleTimeString()})
-        </div>
-      `;
-      document.getElementById('ayudar').style.display = 'none';
-    });
-    
-    // Configurar el botón de ayuda
-    document.getElementById('ayudar').addEventListener('click', () => {
-      socket.emit('CaidaResuelta', {
-        tipo: 'caida',
-        mensaje: 'La persona ha sido ayudada.',
-        timestamp: new Date().toISOString()
-      });
-      window.location.href = '/cuidador.html';
-    });
-  </script>
 </body>
 </html>
